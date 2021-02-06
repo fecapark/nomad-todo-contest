@@ -2,10 +2,11 @@ import { UserStorage } from "../utils/CustomStorage.js";
 import { getTimeStatus } from "../utils/UserStatus.js";
 
 export default class ProfileComponent {
-  constructor({ $target, modal }) {
+  constructor({ $target, modal, cardComponent }) {
     this.$target = $target;
     this.modal = modal;
     this.user = UserStorage.isUserSigned ? UserStorage.getUserData() : null;
+    this.cardComponent = cardComponent;
   }
 
   renderProfile() {
@@ -36,7 +37,9 @@ export default class ProfileComponent {
     profileContainer.appendChild(profileText);
     this.$target.appendChild(profileContainer);
 
-    this.setProgress(10, 13);
+    const { todo, complete } = this.cardComponent.cards;
+
+    this.setProgress(complete.length, todo.length + complete.length);
     this.setSlider();
   }
 
@@ -153,8 +156,13 @@ export default class ProfileComponent {
       return Math.round((percentage * 180) / 50);
     }
 
-    const p = getPercentage(endCount, allCount);
-    const d = getDegree(p);
+    let p = 0,
+      d = 0;
+
+    if (allCount > 0) {
+      p = getPercentage(endCount, allCount);
+      d = getDegree(p);
+    }
 
     const $rightBar = this.$progressContainer.querySelector(
       ".progress__circle .right .progress__bar-inner"
@@ -165,18 +173,19 @@ export default class ProfileComponent {
     const $dot = this.$progressContainer.querySelector(
       ".progress__circle .progress__dot"
     );
-    const $innerP = this.$progressContainer.querySelector(
+    const $innerPs = this.$progressContainer.querySelectorAll(
       ".progress__inner-percentage"
     );
     const $innerN = this.$progressContainer.querySelector(
       ".progress__inner-nums"
     );
 
-    $innerP.textContent = `${p}%`;
+    $innerPs.forEach(($innerP) => ($innerP.textContent = `${p}%`));
     $innerN.textContent = `${endCount} / ${allCount}`;
 
     if (p < 50) {
       $rightBar.style.transform = `rotate(${d}deg)`;
+      $leftBar.style.transform = `rotate(0deg)`;
       $dot.style.transform = `rotate(${d - 90}deg)`;
     } else {
       $rightBar.style.transform = `rotate(180deg)`;

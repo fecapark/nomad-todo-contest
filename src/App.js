@@ -9,19 +9,22 @@ export default class App {
     this.$innerContainer = this.createInnerContainer();
 
     this.modal = new Modal({ $target });
-    this.profileComponent = new ProfileComponent({
-      $target: this.$innerContainer,
-      modal: this.modal,
-    });
     this.cardComponent = new CardComponent({
       $target: this.$innerContainer,
       modal: this.modal,
+    });
+    this.profileComponent = new ProfileComponent({
+      $target: this.$innerContainer,
+      modal: this.modal,
+      cardComponent: this.cardComponent,
     });
     this.loginComponent = new LoginComponent({
       $target,
       profileComponent: this.profileComponent,
       cardComponent: this.cardComponent,
     });
+
+    this.cardComponent.profileComponent = this.profileComponent;
   }
 
   createInnerContainer() {

@@ -1,6 +1,7 @@
 const storage = window.localStorage;
 const USER_KEY = "user-key";
-const LIST_KEY = "list-key";
+const CARD_KEY_TODO = "card-key-todo";
+const CARD_KEY_COMPLETE = "card-key-complete";
 const TAG_KEY = "tag-key";
 
 const UserStorage = {
@@ -37,13 +38,119 @@ const UserStorage = {
 
   removeUserData: () => {
     storage.removeItem(USER_KEY);
-    storage.removeItem(LIST_KEY);
+    storage.removeItem(CARD_KEY_TODO);
+    storage.removeItem(CARD_KEY_COMPLETE);
     storage.removeItem(TAG_KEY);
     window.location.reload();
   },
 };
 
-const ListStorage = {};
+const CardStorage = {
+  getAllCardFromTodo: () => {
+    const data = JSON.parse(storage.getItem(CARD_KEY_TODO));
+
+    if (!data || data.length === 0) return [];
+    return data;
+  },
+
+  getAllCardFromComplete: () => {
+    const data = JSON.parse(storage.getItem(CARD_KEY_COMPLETE));
+
+    if (!data || data.length === 0) return [];
+    return data;
+  },
+
+  addCardToTodo: (cardObj) => {
+    const allCards = CardStorage.getAllCardFromTodo();
+
+    const card = {
+      tag: cardObj.tag,
+      countdown: cardObj.countdown,
+      text: cardObj.text,
+      updatedAt: cardObj.updatedAt,
+      salt: cardObj.salt,
+      id: cardObj.id,
+    };
+
+    allCards.unshift(card);
+
+    storage.setItem(CARD_KEY_TODO, JSON.stringify(allCards));
+  },
+
+  addCardToComplete: (cardObj) => {
+    const allCards = CardStorage.getAllCardFromComplete();
+
+    const card = {
+      tag: cardObj.tag,
+      countdown: cardObj.countdown,
+      text: cardObj.text,
+      updatedAt: cardObj.updatedAt,
+      salt: cardObj.salt,
+      id: cardObj.id,
+    };
+
+    allCards.unshift(card);
+
+    storage.setItem(CARD_KEY_COMPLETE, JSON.stringify(allCards));
+  },
+
+  containsTodo: (id) => {
+    id = parseInt(id);
+
+    const allCards = CardStorage.getAllCardFromTodo();
+    let idx = -1;
+
+    for (let i = 0; i < allCards.length; i++) {
+      if (allCards[i].id === id) {
+        idx = i;
+        break;
+      }
+    }
+
+    return idx;
+  },
+
+  containsComplete: (id) => {
+    id = parseInt(id);
+
+    const allCards = CardStorage.getAllCardFromComplete();
+    let idx = -1;
+
+    for (let i = 0; i < allCards.length; i++) {
+      if (allCards[i].id === id) {
+        idx = i;
+        break;
+      }
+    }
+
+    return idx;
+  },
+
+  removeCardFromTodo: (id) => {
+    id = parseInt(id);
+
+    const allCards = CardStorage.getAllCardFromTodo();
+    const idx = CardStorage.containsTodo(id);
+
+    console.log(idx);
+
+    if (idx === -1) return;
+
+    allCards.splice(idx, 1);
+    storage.setItem(CARD_KEY_TODO, JSON.stringify(allCards));
+  },
+
+  removeCardFromComplete: (id) => {
+    id = parseInt(id);
+
+    const allCards = CardStorage.getAllCardFromComplete();
+    const idx = CardStorage.containsComplete(id);
+    if (idx === -1) return;
+
+    allCards.splice(idx, 1);
+    storage.setItem(CARD_KEY_COMPLETE, JSON.stringify(allCards));
+  },
+};
 
 const TagStorage = {
   getAllTags: () => {
@@ -61,6 +168,7 @@ const TagStorage = {
   },
 
   removeTag: (tag) => {
+    const tagObjs = TagStorage.getAllTags();
     const idx = TagStorage.contains(tag);
     if (idx === -1) return;
 
@@ -79,8 +187,6 @@ const TagStorage = {
       }
     }
 
-    console.log(tagObjs);
-
     return idx;
   },
 
@@ -95,6 +201,18 @@ const TagStorage = {
 
     return null;
   },
+
+  removeCardId: (id) => {
+    const tagObjs = TagStorage.getAllTags();
+
+    const removed = tagObjs.map((tagObj) => {
+      tagObj.cardId = tagObj.cardId.filter((cardId) => cardId !== parseInt(id));
+
+      return tagObj;
+    });
+
+    storage.setItem(TAG_KEY, JSON.stringify(removed));
+  },
 };
 
-export { UserStorage, ListStorage, TagStorage };
+export { UserStorage, CardStorage, TagStorage };
