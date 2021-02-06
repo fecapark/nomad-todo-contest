@@ -1,12 +1,74 @@
-import { TagStorage } from "../utils/CustomStorage.js";
+import { TagStorage, CardStorage } from "../utils/CustomStorage.js";
+import Card from "./Card.js";
 
 export default class CardComponent {
   constructor({ $target, modal }) {
     this.$target = $target;
     this.modal = modal;
+    this.cards = {
+      todo: this.initTodoCards.bind(this)(),
+      complete: this.initCompleteCards.bind(this)(),
+    };
+    this.activeSection = "todos";
+    this.profileComponent = null;
   }
 
-  renderCardContainer() {
+  initTodoCards() {
+    let todo = [];
+    const todoCards = CardStorage.getAllCardFromTodo();
+
+    todoCards.forEach((todoCard) => {
+      const $cardElement = document.createElement("div");
+      $cardElement.className = "card";
+      $cardElement.id = todoCard.id;
+      $cardElement.innerHTML = todoCard.element;
+
+      const newCard = new Card({
+        tag: todoCard.tag,
+        countdown: todoCard.countdown,
+        text: todoCard.text,
+        updatedAt: todoCard.updatedAt,
+        cardComponent: this,
+        salt: todoCard.salt,
+        id: todoCard.id,
+      });
+
+      todo.unshift(newCard);
+    });
+
+    return todo;
+  }
+
+  initCompleteCards() {
+    let complete = [];
+    const completeCards = CardStorage.getAllCardFromComplete();
+
+    completeCards.forEach((completeCard) => {
+      const $cardElement = document.createElement("div");
+      $cardElement.className = "card";
+      $cardElement.id = completeCard.id;
+      $cardElement.innerHTML = completeCard.element;
+
+      const newCard = new Card(
+        {
+          tag: completeCard.tag,
+          countdown: completeCard.countdown,
+          text: completeCard.text,
+          updatedAt: completeCard.updatedAt,
+          cardComponent: this,
+          salt: completeCard.salt,
+          id: completeCard.id,
+        },
+        true
+      );
+
+      complete.unshift(newCard);
+    });
+
+    return complete;
+  }
+
+  createCardContainer() {
     const $cardContainer = document.createElement("main");
     $cardContainer.className = "card-container hidden";
 
@@ -16,6 +78,7 @@ export default class CardComponent {
       '<svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 24 24" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"></path></svg>';
 
     $addCardButton.addEventListener("click", () => {
+      $addCardButton.blur();
       const $sender = document.createElement("div");
       $sender.className = "sender";
 
@@ -34,13 +97,122 @@ export default class CardComponent {
           type: "element",
         },
         onContinue: () => {
-          console.log("wow");
+          const $tags = $tagContainer
+            .querySelector(".tag-inner-container")
+            .querySelectorAll(".tag");
+          const tags = [].slice
+            .call($tags)
+            .map(($tag) =>
+              $tag.querySelector(".tag__span").textContent.slice(1)
+            );
+
+          const isActive = $countdownContainer
+            .querySelector(".countdown__active-circle")
+            .classList.contains("active");
+          let countdown = null;
+          if (isActive) {
+            countdown = {
+              hour: $countdownContainer.querySelector(".countdown__input.hour")
+                .value,
+              min: $countdownContainer.querySelector(".countdown__input.min")
+                .value,
+            };
+          }
+
+          const text = $todoInputContainer.querySelector(".todo__input").value;
+
+          const newCard = new Card({
+            tag: tags,
+            countdown,
+            text,
+            cardComponent: this,
+          });
+
+          this.cards.todo.unshift(newCard);
+
+          const allTags = TagStorage.getAllTags();
+          tags.forEach((tag) => {
+            const idx = TagStorage.contains(tag);
+            allTags[idx].cardId.unshift(newCard.id);
+          });
+          window.localStorage.setItem("tag-key", JSON.stringify(allTags));
+
+          CardStorage.addCardToTodo(newCard);
+
+          const $allCardContainer = document.querySelector(
+            ".all-card-container"
+          );
+
+          this.profileComponent.setProgress(
+            this.cards.complete.length,
+            this.cards.todo.length + this.cards.complete.length
+          );
+
+          if (!$allCardContainer.classList.contains("complete")) {
+            $allCardContainer.prepend(newCard.element);
+          }
+
+          $todoSectionButton.click();
         },
       });
     });
 
+    const $todoSectionButton = document.createElement("button");
+    $todoSectionButton.className = "section-button__todo active";
+    $todoSectionButton.textContent = "Todos";
+    $todoSectionButton.addEventListener("click", () => {
+      if (this.activeSection === "todos") return;
+
+      this.activeSection = "todos";
+      $todoSectionButton.classList.add("active");
+      $completeSectionButton.classList.remove("active");
+
+      $allCardContainer.classList.remove("complete");
+
+      this.updateCardContainer();
+    });
+
+    const $completeSectionButton = document.createElement("button");
+    $completeSectionButton.className = "section-button__complete";
+    $completeSectionButton.textContent = "Complete";
+    $completeSectionButton.addEventListener("click", () => {
+      if (this.activeSection === "complete") return;
+
+      this.activeSection = "complete";
+      $todoSectionButton.classList.remove("active");
+      $completeSectionButton.classList.add("active");
+
+      $allCardContainer.classList.add("complete");
+
+      this.updateCardContainer();
+    });
+
+    const $allCardContainer = document.createElement("div");
+    $allCardContainer.className = "all-card-container";
+    this.$allCardContainer = $allCardContainer;
+
     $cardContainer.appendChild($addCardButton);
+    $cardContainer.appendChild($todoSectionButton);
+    $cardContainer.appendChild($completeSectionButton);
+    $cardContainer.appendChild($allCardContainer);
     this.$target.appendChild($cardContainer);
+
+    this.updateCardContainer();
+  }
+
+  updateCardContainer() {
+    const $allCardContainer = this.$allCardContainer;
+    $allCardContainer.innerHTML = "";
+
+    if ($allCardContainer.classList.contains("complete")) {
+      this.cards.complete.forEach((card) => {
+        $allCardContainer.appendChild(card.element);
+      });
+    } else {
+      this.cards.todo.forEach((card) => {
+        $allCardContainer.appendChild(card.element);
+      });
+    }
   }
 
   createTagContainer() {
@@ -103,9 +275,9 @@ export default class CardComponent {
       let r, g, b;
 
       if (!tagObj) {
-        r = Math.floor(Math.random() * 255);
-        g = Math.floor(Math.random() * 255);
-        b = Math.floor(Math.random() * 255);
+        r = Math.floor(Math.random() * 256);
+        g = Math.floor(Math.random() * 256);
+        b = Math.floor(Math.random() * 256);
       } else {
         r = tagObj.r;
         g = tagObj.g;
@@ -123,6 +295,8 @@ export default class CardComponent {
         if (!$item.classList.contains("tag__span")) {
           $item = $item.querySelector(".tag__span");
         }
+
+        if (!$item) return;
 
         addTagOnInnerContainer($item.textContent.slice(1));
       }
@@ -199,9 +373,10 @@ export default class CardComponent {
         if (TagStorage.contains(tag) === -1) {
           let newObj = {
             text: tag,
-            r: Math.floor(Math.random() * 255),
-            g: Math.floor(Math.random() * 255),
-            b: Math.floor(Math.random() * 255),
+            r: Math.floor(Math.random() * 256),
+            g: Math.floor(Math.random() * 256),
+            b: Math.floor(Math.random() * 256),
+            cardId: [],
           };
           TagStorage.appendTag(newObj);
         }
@@ -299,7 +474,7 @@ export default class CardComponent {
     });
 
     const $minInput = document.createElement("input");
-    $minInput.classList = "countdown__input hour";
+    $minInput.classList = "countdown__input min";
     $minInput.type = "number";
     $minInput.defaultValue = "0";
     $minInput.min = "0";
@@ -366,6 +541,12 @@ export default class CardComponent {
 
       $lengthContainer.textContent = `${$toDoInput.value.length} / ${textLimit}`;
     });
+    $toDoInput.addEventListener("keyup", (e) => {
+      if (e.keyCode === 13) {
+        const $submitButton = document.querySelector(".modal-content__ok");
+        $submitButton.click();
+      }
+    });
 
     const $removeButton = document.createElement("button");
     $removeButton.className = "todo__remove";
@@ -388,10 +569,4 @@ export default class CardComponent {
 
     return $toDoContainer;
   }
-
-  setState(nextData) {
-    this.renderCardContainer();
-  }
 }
-
-// export default class Card {}
