@@ -68,6 +68,7 @@ const CardStorage = {
       countdown: cardObj.countdown,
       text: cardObj.text,
       updatedAt: cardObj.updatedAt,
+      createdAt: cardObj.createdAt,
       salt: cardObj.salt,
       id: cardObj.id,
     };
@@ -85,6 +86,7 @@ const CardStorage = {
       countdown: cardObj.countdown,
       text: cardObj.text,
       updatedAt: cardObj.updatedAt,
+      createdAt: cardObj.createdAt,
       salt: cardObj.salt,
       id: cardObj.id,
     };

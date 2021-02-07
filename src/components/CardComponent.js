@@ -13,6 +13,13 @@ export default class CardComponent {
     this.profileComponent = null;
   }
 
+  setHeightSize($cardContainer) {
+    const brect = $cardContainer.getBoundingClientRect();
+    const bodyHeight = document.body.getBoundingClientRect().height;
+
+    $cardContainer.style.height = `${bodyHeight - brect.top - 30}px`;
+  }
+
   initTodoCards() {
     let todo = [];
     const todoCards = CardStorage.getAllCardFromTodo();
@@ -28,12 +35,14 @@ export default class CardComponent {
         countdown: todoCard.countdown,
         text: todoCard.text,
         updatedAt: todoCard.updatedAt,
+        createdAt: todoCard.createdAt,
         cardComponent: this,
         salt: todoCard.salt,
         id: todoCard.id,
+        modal: this.modal,
       });
 
-      todo.unshift(newCard);
+      todo.push(newCard);
     });
 
     return todo;
@@ -55,14 +64,20 @@ export default class CardComponent {
           countdown: completeCard.countdown,
           text: completeCard.text,
           updatedAt: completeCard.updatedAt,
+          createdAt: completeCard.createdAt,
           cardComponent: this,
           salt: completeCard.salt,
           id: completeCard.id,
+          modal: this.modal,
         },
         true
       );
 
-      complete.unshift(newCard);
+      const $countdown = newCard.element.querySelector(".card__countdown");
+      $countdown.innerHTML = "Complete";
+      $countdown.classList.add("complete");
+
+      complete.push(newCard);
     });
 
     return complete;
@@ -126,6 +141,7 @@ export default class CardComponent {
             countdown,
             text,
             cardComponent: this,
+            modal: this.modal,
           });
 
           this.cards.todo.unshift(newCard);
@@ -150,6 +166,12 @@ export default class CardComponent {
 
           if (!$allCardContainer.classList.contains("complete")) {
             $allCardContainer.prepend(newCard.element);
+          }
+
+          const $emptySignSpan = $allCardContainer.querySelector(".empty-sign");
+          if ($emptySignSpan) {
+            console.log("removed");
+            $emptySignSpan.remove();
           }
 
           $todoSectionButton.click();
@@ -197,6 +219,10 @@ export default class CardComponent {
     $cardContainer.appendChild($allCardContainer);
     this.$target.appendChild($cardContainer);
 
+    this.setHeightSize.bind(this)($cardContainer);
+    window.addEventListener("resize", () => {
+      this.setHeightSize.bind(this)($cardContainer);
+    });
     this.updateCardContainer();
   }
 
@@ -208,10 +234,23 @@ export default class CardComponent {
       this.cards.complete.forEach((card) => {
         $allCardContainer.appendChild(card.element);
       });
+
+      if (this.cards.complete.length === 0) {
+        const $emptySignSpan = document.createElement("span");
+        $emptySignSpan.className = "empty-sign";
+        $emptySignSpan.textContent = "No Cards";
+        $allCardContainer.appendChild($emptySignSpan);
+      }
     } else {
       this.cards.todo.forEach((card) => {
         $allCardContainer.appendChild(card.element);
       });
+      if (this.cards.todo.length === 0) {
+        const $emptySignSpan = document.createElement("span");
+        $emptySignSpan.className = "empty-sign";
+        $emptySignSpan.textContent = "No Cards";
+        $allCardContainer.appendChild($emptySignSpan);
+      }
     }
   }
 
@@ -535,8 +574,10 @@ export default class CardComponent {
 
       if (textSize > textLimit) {
         $lengthContainer.style.color = "rgb(255, 129, 107)";
+        $toDoInput.style.borderColor = "rgb(255, 129, 107)";
       } else {
         $lengthContainer.style.color = "";
+        $toDoInput.style.borderColor = "";
       }
 
       $lengthContainer.textContent = `${$toDoInput.value.length} / ${textLimit}`;
@@ -555,6 +596,7 @@ export default class CardComponent {
       $toDoInput.value = "";
       $lengthContainer.textContent = `0 / ${textLimit}`;
       $lengthContainer.style.color = "";
+      $toDoInput.style.borderColor = "";
       $toDoInput.focus();
     });
 
