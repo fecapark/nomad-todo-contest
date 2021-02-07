@@ -3,17 +3,96 @@ import { Hash } from "../utils/Hash.js";
 
 export default class Card {
   constructor(
-    { tag, countdown, text, updatedAt, cardComponent, salt, id },
+    {
+      tag,
+      countdown,
+      text,
+      updatedAt,
+      createdAt,
+      cardComponent,
+      salt,
+      id,
+      modal,
+    },
     isComplete = false
   ) {
     this.tag = tag;
     this.countdown = countdown;
     this.text = text;
-    this.updatedAt = updatedAt || this.getCurTime();
+    this.updatedAt = updatedAt || this.getCurTime.bind(this)();
+    this.createdAt = createdAt || this.getCurTime.bind(this)();
     this.cardComponent = cardComponent;
+    this.modal = modal;
     this.salt = salt || Hash.getSalt();
     this.id = id || Hash.createHash(text + this.tag.join("") + this.salt);
-    this.element = this.createCardElement(isComplete);
+    this.element = this.createCardElement.bind(this)(isComplete);
+
+    this.counter = this.setCounter.bind(this)();
+  }
+
+  setCounter() {
+    if (!this.countdown) return;
+
+    return setInterval(() => {
+      const $countdown = this.element.querySelector(".card__countdown");
+      let { hour, min, sec } = this.getLeftTime();
+
+      if (hour + min + sec === 0) {
+        $countdown.innerHTML =
+          "<span class='countdown__time end'>Time Over</span>";
+
+        clearInterval(this.counter);
+
+        return;
+      }
+
+      if (hour + min === 0) {
+        if (sec < 10) sec = `0${sec}`;
+        $countdown.innerHTML = `<span class='countdown__time end-soon'>${sec}</span> sec`;
+        return;
+      }
+
+      if (hour === 0) {
+        if (min < 10) min = `0${min}`;
+        if (sec < 10) sec = `0${sec}`;
+        $countdown.innerHTML = `<span class='countdown__time'>${min}</span> min <span class='countdown__time'>${sec}</span> sec`;
+        return;
+      }
+
+      if (hour < 10) hour = `0${hour}`;
+      if (min < 10) min = `0${min}`;
+      if (sec < 10) sec = `0${sec}`;
+
+      $countdown.innerHTML = `<span class='countdown__time'>${hour}</span> hour <span class='countdown__time'>${min}</span> min <span class='countdown__time'>${sec}</span> sec`;
+    }, 1000);
+  }
+
+  getLeftTime() {
+    const curTime = new Date();
+    const createdTime = new Date(this.createdAt);
+
+    const elapsedTime = Math.floor((curTime - createdTime) / 1000);
+
+    let { hour, min } = this.countdown;
+    hour = parseInt(hour);
+    min = parseInt(min);
+
+    const countDownTime = hour * 3600 + min * 60;
+    const leftTime = countDownTime - elapsedTime;
+
+    if (leftTime <= 0) {
+      return {
+        hour: 0,
+        min: 0,
+        sec: 0,
+      };
+    }
+
+    return {
+      hour: Math.floor(leftTime / 3600),
+      min: Math.floor((leftTime % 3600) / 60),
+      sec: Math.floor((leftTime % 3600) % 60),
+    };
   }
 
   getCurTime() {
@@ -32,11 +111,18 @@ export default class Card {
     if (min < 10) min = `0${min}`;
     if (sec < 10) sec = `0${sec}`;
 
-    return `${year}/${month}/${date}T${hour}:${min}:${sec}`;
+    return `${year}-${month}-${date}T${hour}:${min}:${sec}`;
   }
 
   createCardElement(isComplete) {
-    function createTag(tag, r, g, b, inThumb = false) {
+    function createTag(
+      tag,
+      r,
+      g,
+      b,
+      inThumb = false,
+      $tagInnerContainer = null
+    ) {
       const $tag = document.createElement("div");
       $tag.className = "tag";
       $tag.style.backgroundColor = `rgba(${r}, ${g}, ${b}, 0.2)`;
@@ -44,6 +130,7 @@ export default class Card {
       const $tagSpan = document.createElement("span");
       $tagSpan.className = "tag__span";
       $tagSpan.textContent = "#" + tag;
+      console.log($tagSpan, tag);
 
       $tag.appendChild($tagSpan);
 
@@ -118,6 +205,84 @@ export default class Card {
       $toggleMenuButton.innerHTML = '<i class="fas fa-bars"></i>';
     }
 
+    function editButtonEL(e) {
+      e.stopPropagation();
+
+      const $sender = document.createElement("div");
+      $sender.className = "sender";
+
+      const $tagContainer = this.cardComponent.createTagContainer();
+
+      const $tagInnerContainer = $tagContainer.querySelector(
+        ".tag-inner-container"
+      );
+      this.tag.forEach((tag) => {
+        const { r, g, b } = TagStorage.getTagObj(tag);
+        const $tag = createTag(tag, r, g, b, false, $tagInnerContainer);
+
+        $tagInnerContainer.insertBefore(
+          $tag,
+          $tagContainer.querySelector(".tag__input-container")
+        );
+      });
+
+      const $todoInputContainer = this.cardComponent.createToDoContainer();
+      $todoInputContainer.querySelector(".todo__input").value = this.text;
+
+      const $todoLengthContainer = $todoInputContainer.querySelector(
+        ".todo__length-container"
+      );
+      $todoLengthContainer.textContent = `${this.text.length} / 80`;
+
+      $sender.appendChild($tagContainer);
+      $sender.appendChild($todoInputContainer);
+
+      this.modal.setState({
+        title: "Edit Card",
+        html: {
+          data: $sender,
+          type: "element",
+        },
+        onContinue: () => {
+          const $tags = $tagContainer
+            .querySelector(".tag-inner-container")
+            .querySelectorAll(".tag");
+          const tags = [].slice
+            .call($tags)
+            .map(($tag) =>
+              $tag.querySelector(".tag__span").textContent.slice(1)
+            );
+
+          this.tag = tags;
+
+          const $cardTagContainer = this.element.querySelector(
+            ".card__tag-container"
+          );
+          $cardTagContainer.innerHTML = "";
+          this.tag.forEach((tag) => {
+            const { r, g, b } = TagStorage.getTagObj(tag);
+            const $tag = createTag(tag, r, g, b, true);
+            $cardTagContainer.appendChild($tag);
+          });
+
+          const text = $todoInputContainer.querySelector(".todo__input").value;
+          this.text = text;
+          this.element.querySelector(".card__text").textContent = text;
+
+          const allCards = CardStorage.getAllCardFromTodo();
+          const idx = CardStorage.containsTodo(this.id);
+          allCards[idx].text = text;
+          allCards[idx].tag = tags;
+          window.localStorage.setItem(
+            "card-key-todo",
+            JSON.stringify(allCards)
+          );
+
+          this.updatedAt = this.getCurTime.bind(this)();
+        },
+      });
+    }
+
     function resendButtonEL(e) {
       e.stopPropagation();
 
@@ -160,6 +325,7 @@ export default class Card {
       $editButton.className = "card-menu edit";
       $editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
       $editButton.title = "Edit";
+      $editButton.addEventListener("mousedown", editButtonEL.bind(this));
 
       const $newDeleteButton = document.createElement("button");
       $newDeleteButton.className = "card-menu delete";
@@ -181,6 +347,26 @@ export default class Card {
 
         spliceCardFromToDo($card, this.cardComponent);
         $card.parentNode.removeChild($card);
+
+        const { todo, complete } = this.cardComponent.cards;
+        this.cardComponent.profileComponent.setProgress(
+          complete.length,
+          todo.length + complete.length
+        );
+
+        if (this.counter) {
+          clearInterval(this.counter);
+          this.counter = null;
+        }
+
+        if (this.cardComponent.cards.todo.length === 0) {
+          const $emptySignSpan = document.createElement("span");
+          $emptySignSpan.className = "empty-sign";
+          $emptySignSpan.textContent = "No Cards";
+          document
+            .querySelector(".all-card-container")
+            .appendChild($emptySignSpan);
+        }
       });
 
       $cardMenuContainer.appendChild($completeButton);
@@ -200,9 +386,31 @@ export default class Card {
         todo.length + complete.length
       );
 
+      const $countdown = card.element.querySelector(".card__countdown");
+      $countdown.innerHTML = "Loading";
+      $countdown.classList.remove("complete");
+
+      if (card.countdown) {
+        card.counter = card.setCounter.bind(this)();
+      } else {
+        $countdown.innerHTML = "Whenever";
+      }
+
       setTimeout(() => {
         $card.classList.remove("remove");
         $card.remove();
+
+        if (
+          this.cardComponent.cards.complete.length === 0 &&
+          document.querySelector(".all-card-container").matches(".complete")
+        ) {
+          const $emptySignSpan = document.createElement("span");
+          $emptySignSpan.className = "empty-sign";
+          $emptySignSpan.textContent = "No Cards";
+          document
+            .querySelector(".all-card-container")
+            .appendChild($emptySignSpan);
+        }
       }, 600);
     }
 
@@ -239,8 +447,6 @@ export default class Card {
       const $deleteButton = $cardMenuContainer.querySelector(".delete");
       $deleteButton.remove();
 
-      console.log(card.element, $cardMenuContainer);
-
       const $resendButton = document.createElement("button");
       $resendButton.className = "card-menu resend";
       $resendButton.innerHTML = '<i class="fas fa-arrow-left"></i>';
@@ -266,6 +472,26 @@ export default class Card {
 
         spliceCardFromComplete($card, this.cardComponent);
         $card.parentNode.removeChild($card);
+
+        const { todo, complete } = this.cardComponent.cards;
+        this.cardComponent.profileComponent.setProgress(
+          complete.length,
+          todo.length + complete.length
+        );
+
+        if (this.counter) {
+          clearInterval(this.counter);
+          this.counter = null;
+        }
+
+        if (this.cardComponent.cards.complete.length === 0) {
+          const $emptySignSpan = document.createElement("span");
+          $emptySignSpan.className = "empty-sign";
+          $emptySignSpan.textContent = "No Cards";
+          document
+            .querySelector(".all-card-container")
+            .appendChild($emptySignSpan);
+        }
       });
 
       $cardMenuContainer.appendChild($resendButton);
@@ -284,9 +510,29 @@ export default class Card {
         todo.length + complete.length
       );
 
+      const $countdown = card.element.querySelector(".card__countdown");
+      $countdown.innerHTML = "Complete";
+      $countdown.classList.add("complete");
+      if (card.counter) {
+        clearInterval(card.counter);
+        card.counter = null;
+      }
+
       setTimeout(() => {
         $card.classList.remove("remove");
         $card.remove();
+
+        if (
+          this.cardComponent.cards.todo.length === 0 &&
+          !document.querySelector(".all-card-container").matches(".complete")
+        ) {
+          const $emptySignSpan = document.createElement("span");
+          $emptySignSpan.className = "empty-sign";
+          $emptySignSpan.textContent = "No Cards";
+          document
+            .querySelector(".all-card-container")
+            .appendChild($emptySignSpan);
+        }
       }, 600);
     }
 
@@ -317,7 +563,7 @@ export default class Card {
     const $cardCountdown = document.createElement("div");
     $cardCountdown.className = "card__countdown";
     if (this.countdown) {
-      $cardCountdown.textContent = `${this.countdown.hour}H ${this.countdown.min}M Left`;
+      $cardCountdown.textContent = "Loading";
     } else {
       $cardCountdown.textContent = "Whenever";
     }
@@ -348,6 +594,7 @@ export default class Card {
       $editButton.className = "card-menu edit";
       $editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
       $editButton.title = "Edit";
+      $editButton.addEventListener("mousedown", editButtonEL.bind(this));
 
       const $deleteButton = document.createElement("button");
       $deleteButton.className = "card-menu delete";
@@ -370,6 +617,26 @@ export default class Card {
 
         spliceCardFromToDo($card, this.cardComponent);
         $card.parentNode.removeChild($card);
+
+        const { todo, complete } = this.cardComponent.cards;
+        this.cardComponent.profileComponent.setProgress(
+          complete.length,
+          todo.length + complete.length
+        );
+
+        if (this.counter) {
+          clearInterval(this.counter);
+          this.counter = null;
+        }
+
+        if (this.cardComponent.cards.todo.length === 0) {
+          const $emptySignSpan = document.createElement("span");
+          $emptySignSpan.className = "empty-sign";
+          $emptySignSpan.textContent = "No Cards";
+          document
+            .querySelector(".all-card-container")
+            .appendChild($emptySignSpan);
+        }
       });
 
       $cardMenuContainer.appendChild($toggleMenuButton);
@@ -415,6 +682,26 @@ export default class Card {
 
         spliceCardFromComplete($card, this.cardComponent);
         $card.parentNode.removeChild($card);
+
+        const { todo, complete } = this.cardComponent.cards;
+        this.cardComponent.profileComponent.setProgress(
+          complete.length,
+          todo.length + complete.length
+        );
+
+        if (this.counter) {
+          clearInterval(this.counter);
+          this.counter = null;
+        }
+
+        if (this.cardComponent.cards.complete.length === 0) {
+          const $emptySignSpan = document.createElement("span");
+          $emptySignSpan.className = "empty-sign";
+          $emptySignSpan.textContent = "No Cards";
+          document
+            .querySelector(".all-card-container")
+            .appendChild($emptySignSpan);
+        }
       });
 
       $cardMenuContainer.appendChild($toggleMenuButton);

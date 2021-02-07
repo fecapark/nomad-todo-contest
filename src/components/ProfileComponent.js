@@ -181,7 +181,11 @@ export default class ProfileComponent {
     );
 
     $innerPs.forEach(($innerP) => ($innerP.textContent = `${p}%`));
-    $innerN.textContent = `${endCount} / ${allCount}`;
+    if (allCount === 0) {
+      $innerN.textContent = `-`;
+    } else {
+      $innerN.textContent = `${endCount} / ${allCount}`;
+    }
 
     if (p < 50) {
       $rightBar.style.transform = `rotate(${d}deg)`;

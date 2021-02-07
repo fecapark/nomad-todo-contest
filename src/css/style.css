@@ -168,12 +168,13 @@ body {
 .profile-container {
   position: relative;
   width: 90%;
-  height: 230px;
+  height: 220px;
   margin: auto;
-  background-color: #2b2a49;
-  border-bottom-left-radius: 10px;
-  border-bottom-right-radius: 10px;
-  box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
+  /* background-color: #2b2a49; */
+  background-color: #22223a;
+  border-bottom-left-radius: 3px;
+  border-bottom-right-radius: 3px;
+  box-shadow: 0 20px 30px -20px #4b61cf;
   transform: translateY(-100%);
   animation: profile-container__start 0.8s cubic-bezier(0.22, 0.68, 0, 1)
     forwards;
@@ -184,10 +185,7 @@ body {
   align-items: center;
   padding: 0 15px;
   z-index: 20;
-}
-
-.profile-container:hover {
-  box-shadow: 0 0 30px rgba(0, 0, 0, 0.6);
+  border-bottom: 10px solid #4b61cf;
 }
 
 .profile-text {
@@ -271,6 +269,11 @@ body {
 
 .progress__circle .right .progress__bar-inner {
   z-index: 1;
+  transition: 0.5s ease;
+}
+
+.progress__circle .left .progress__bar-inner {
+  transition: 0.5s ease;
 }
 
 .progress__circle .left {
@@ -288,6 +291,8 @@ body {
   margin-top: -5px;
   transform: rotate(-90deg);
   transform-origin: 0% 50%;
+  transition: 0.5s ease;
+  /* background-color: #87e000; */
 }
 
 .progress__circle .progress__dot span {
@@ -528,7 +533,6 @@ body {
   position: relative;
   width: 90%;
   /* height: auto; */
-  height: 50%;
   margin: auto;
   margin-top: 70px;
   margin-bottom: 30px;
@@ -882,6 +886,7 @@ input[type="number"]::-webkit-outer-spin-button {
   overflow-y: auto;
   overflow-x: hidden;
   padding-top: 15px;
+  position: relative;
 }
 
 .all-card-container::-webkit-scrollbar {
@@ -946,7 +951,7 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .card__countdown {
-  width: 50%;
+  width: 62%;
   min-height: 30px;
   display: flex;
   justify-content: flex-start;
@@ -963,6 +968,29 @@ input[type="number"]::-webkit-outer-spin-button {
   background-color: rgba(0, 0, 0, 0.2);
 }
 
+.card__countdown.complete {
+  color: rgb(212, 116, 99);
+  font-weight: 600;
+}
+
+.countdown__time {
+  color: white;
+  margin: 0 10px;
+}
+
+.countdown__time:first-child {
+  margin-left: 0;
+}
+
+.countdown__time.end-soon {
+  color: tomato;
+}
+
+.countdown__time.end {
+  color: rgb(109, 133, 255);
+  font-weight: 600;
+}
+
 .card__text {
   width: 80%;
   min-height: 30px;
@@ -976,6 +1004,7 @@ input[type="number"]::-webkit-outer-spin-button {
   font-weight: 600;
   font-size: 20px;
   border-radius: 5px;
+  word-break: break-all;
 }
 
 .card__text:hover {
@@ -1098,6 +1127,28 @@ input[type="number"]::-webkit-outer-spin-button {
 .card-menu.resend {
   z-index: 2;
   background-color: #3859ff;
+}
+
+.empty-sign {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-weight: 600;
+  font-size: 20px;
+  color: #7d7bd196;
+  opacity: 0;
+  animation: empty-sign__start 0.3s ease-out forwards;
+}
+
+@keyframes empty-sign__start {
+  from {
+    opacity: 0.5;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes card__start {
@@ -1257,7 +1308,7 @@ input[type="number"]::-webkit-outer-spin-button {
     top: 50%;
     width: 50%;
     height: 7px;
-    margin-top: -5px;
+    margin-top: -3.5px;
     transform: rotate(-90deg);
     transform-origin: 0% 50%;
   }
@@ -1275,5 +1326,19 @@ input[type="number"]::-webkit-outer-spin-button {
   .section-button__complete {
     font-size: 12px;
     padding-right: calc(25% - 45px);
+  }
+
+  .card__countdown {
+    width: 70%;
+    font-size: 12px;
+  }
+
+  .countdown__time {
+    color: white;
+    margin: 0 0.5em;
+  }
+
+  .countdown__time:first-child {
+    margin-left: 0;
   }
 }

@@ -13,7 +13,7 @@ export default class LoginComponent {
       this.$loginContainer.className = "login-container";
       this.$target.appendChild(this.$loginContainer);
 
-      this.renderLogin({
+      this.renderLogin.bind(this)({
         settingUser: true,
         loginSpanText: "Hello, there!",
         loginInputPlaceHolder: "What's your name?",
