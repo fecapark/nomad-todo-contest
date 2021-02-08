@@ -3,6 +3,7 @@ const USER_KEY = "user-key";
 const CARD_KEY_TODO = "card-key-todo";
 const CARD_KEY_COMPLETE = "card-key-complete";
 const TAG_KEY = "tag-key";
+const FILTER_KEY = "filter-key";
 
 const UserStorage = {
   convertUser: (user) => {
@@ -41,6 +42,7 @@ const UserStorage = {
     storage.removeItem(CARD_KEY_TODO);
     storage.removeItem(CARD_KEY_COMPLETE);
     storage.removeItem(TAG_KEY);
+    storage.removeItem(FILTER_KEY);
     window.location.reload();
   },
 };
@@ -215,4 +217,21 @@ const TagStorage = {
   },
 };
 
-export { UserStorage, CardStorage, TagStorage };
+const FilterStorage = {
+  getAllFilters: () => {
+    const data = JSON.parse(storage.getItem(FILTER_KEY));
+
+    if (!data || data.length === 0) return [];
+    return data;
+  },
+
+  setAllFilter: (tags) => {
+    storage.setItem(FILTER_KEY, JSON.stringify(tags));
+  },
+
+  removeAllFilter: () => {
+    storage.removeItem(FILTER_KEY);
+  },
+};
+
+export { UserStorage, CardStorage, TagStorage, FilterStorage };

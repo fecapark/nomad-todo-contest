@@ -23,8 +23,6 @@ export default class App {
       profileComponent: this.profileComponent,
       cardComponent: this.cardComponent,
     });
-
-    this.cardComponent.profileComponent = this.profileComponent;
   }
 
   createInnerContainer() {

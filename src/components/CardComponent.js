@@ -1,4 +1,8 @@
-import { TagStorage, CardStorage } from "../utils/CustomStorage.js";
+import {
+  TagStorage,
+  CardStorage,
+  FilterStorage,
+} from "../utils/CustomStorage.js";
 import Card from "./Card.js";
 
 export default class CardComponent {
@@ -17,12 +21,37 @@ export default class CardComponent {
     let copyCards;
     const $allCardContainer = document.querySelector(".all-card-container");
     const $searchBar = document.querySelector(".filter__search-bar");
-    const text = $searchBar.value;
+    const text = $searchBar.value.toLowerCase();
+    const filterTag = this.profileComponent.filterTag;
 
-    if (!$allCardContainer.matches(".complete")) {
-      copyCards = [...this.cards.todo];
+    if (filterTag.length !== 0) {
+      if (!$allCardContainer.matches(".complete")) {
+        copyCards = [...this.cards.todo].filter((card) => {
+          if (filterTag.length > card.tag.length) return false;
+
+          for (let i = 0; i < filterTag.length; i++) {
+            if (card.tag.indexOf(filterTag[i]) === -1) return false;
+          }
+
+          return true;
+        });
+      } else {
+        copyCards = [...this.cards.complete].filter((card) => {
+          if (filterTag.length > card.tag.length) return false;
+
+          for (let i = 0; i < filterTag.length; i++) {
+            if (card.tag.indexOf(filterTag[i]) === -1) return false;
+          }
+
+          return true;
+        });
+      }
     } else {
-      copyCards = [...this.cards.complete];
+      if (!$allCardContainer.matches(".complete")) {
+        copyCards = [...this.cards.todo];
+      } else {
+        copyCards = [...this.cards.complete];
+      }
     }
 
     if (text.length === 0) {
@@ -44,7 +73,7 @@ export default class CardComponent {
     }
 
     copyCards = copyCards.filter((card) => {
-      const cardText = card.text;
+      const cardText = card.text.toLowerCase();
 
       for (let i = 0; i < text.length; i++) {
         const c = text[i];
@@ -156,7 +185,7 @@ export default class CardComponent {
     $cardContainer.className = "card-container hidden";
 
     const $addCardButton = document.createElement("button");
-    $addCardButton.className = "add-card-button";
+    $addCardButton.className = "add-card-button loading";
     $addCardButton.innerHTML =
       '<svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 24 24" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"></path></svg>';
 
@@ -331,9 +360,26 @@ export default class CardComponent {
     $clearButton.className = "filter__clear-button";
     $clearButton.innerHTML = '<i class="fas fa-times"></i>';
     $clearButton.addEventListener("click", () => {
+      $searchBar.focus();
+
+      if ($searchBar.value.length === 0) return;
+
       $searchBar.value = "";
       this.searchCard.bind(this)(null);
-      $searchBar.focus();
+    });
+
+    const $filterClearButton = document.createElement("button");
+    $filterClearButton.className = "filter__filter-clear-button";
+    $filterClearButton.innerHTML =
+      '<i class="fas fa-times"></i><span>Clear All Filters</span>';
+    $filterClearButton.addEventListener("click", () => {
+      FilterStorage.removeAllFilter();
+
+      this.profileComponent.filterTag = [];
+      this.searchCard.bind(this)(null);
+
+      $filterContainer.classList.remove("filter-active");
+      $filterClearButton.classList.remove("active");
     });
 
     const $allCardContainer = document.createElement("div");
@@ -343,18 +389,37 @@ export default class CardComponent {
     $searchContainer.appendChild($searchBar);
     $searchContainer.appendChild($clearButton);
     $filterContainer.appendChild($searchContainer);
-    $cardContainer.appendChild($addCardButton);
+    $filterContainer.appendChild($filterClearButton);
     $cardContainer.appendChild($todoSectionButton);
     $cardContainer.appendChild($completeSectionButton);
     $cardContainer.appendChild($filterContainer);
     $cardContainer.appendChild($allCardContainer);
     this.$target.appendChild($cardContainer);
+    this.$target.appendChild($addCardButton);
+    $addCardButton.style.top = `${
+      $cardContainer.getBoundingClientRect().top - 40
+    }px`;
+
+    setTimeout(() => {
+      $addCardButton.classList.remove("loading");
+      $addCardButton.style.opacity = "1";
+    }, 700);
 
     this.setHeightSize.bind(this)($cardContainer);
     window.addEventListener("resize", () => {
       this.setHeightSize.bind(this)($cardContainer);
     });
+
     this.updateCardContainer();
+    this.searchCard.bind(this)(null);
+
+    if (FilterStorage.getAllFilters().length > 0) {
+      $filterContainer.classList.add("filter-active");
+      $filterClearButton.classList.add("active");
+    } else {
+      $filterContainer.classList.remove("filter-active");
+      $filterClearButton.classList.remove("active");
+    }
   }
 
   updateCardContainer() {
@@ -385,7 +450,7 @@ export default class CardComponent {
     }
   }
 
-  createTagContainer() {
+  createTagContainer(filtering = false) {
     function createTag(tag, r, g, b, inSearch = false) {
       const $tag = document.createElement("div");
       $tag.className = "tag";
@@ -437,7 +502,7 @@ export default class CardComponent {
       return true;
     }
 
-    function addTagOnInnerContainer(tag) {
+    function addTagOnInnerContainer(tag, filtering) {
       if (checkRemainTagOnCard("#" + tag)) return;
 
       const tagObj = TagStorage.getTagObj(tag);
@@ -445,6 +510,8 @@ export default class CardComponent {
       let r, g, b;
 
       if (!tagObj) {
+        if (filtering) return;
+
         r = Math.floor(Math.random() * 256);
         g = Math.floor(Math.random() * 256);
         b = Math.floor(Math.random() * 256);
@@ -540,7 +607,7 @@ export default class CardComponent {
           return;
         }
 
-        if (TagStorage.contains(tag) === -1) {
+        if (TagStorage.contains(tag) === -1 && !filtering) {
           let newObj = {
             text: tag,
             r: Math.floor(Math.random() * 256),
@@ -550,7 +617,8 @@ export default class CardComponent {
           };
           TagStorage.appendTag(newObj);
         }
-        addTagOnInnerContainer(tag);
+        addTagOnInnerContainer(tag, filtering);
+
         $tagInput.value = "";
 
         updateAllTagContainer();

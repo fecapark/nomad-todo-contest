@@ -278,7 +278,39 @@ export default class Card {
           );
 
           this.updatedAt = this.getCurTime.bind(this)();
+
+          let copyCards;
+          const filterTag = this.cardComponent.profileComponent.filterTag;
+          const cards = this.cardComponent.cards;
+          const $allCardContainer = document.querySelector(
+            ".all-card-container"
+          );
+
+          if (filterTag.length !== 0) {
+            copyCards = [...cards.todo].filter((card) => {
+              if (filterTag.length > card.tag.length) return false;
+
+              for (let i = 0; i < filterTag.length; i++) {
+                if (card.tag.indexOf(filterTag[i]) === -1) return false;
+              }
+
+              return true;
+            });
+
+            if (copyCards.length === 0) {
+              const $emptySignSpan = document.createElement("span");
+              $emptySignSpan.className = "empty-sign";
+              $emptySignSpan.textContent = "No Cards";
+
+              $allCardContainer.appendChild($emptySignSpan);
+            }
+
+            if (copyCards.indexOf(this) === -1) {
+              this.element.remove();
+            }
+          }
         },
+        htmlMinHeight: 140,
       });
     }
 
@@ -358,6 +390,8 @@ export default class Card {
           this.counter = null;
         }
 
+        const $allCardContainer = document.querySelector(".all-card-container");
+
         if (document.querySelector(".filter__search-bar").value.length !== 0) {
           this.cardComponent.searchCard.bind(this.cardComponent)(null);
         } else if (this.cardComponent.cards.todo.length === 0) {
@@ -366,6 +400,42 @@ export default class Card {
           $emptySignSpan.textContent = "No Cards";
 
           $allCardContainer.appendChild($emptySignSpan);
+        } else {
+          let copyCards;
+          const filterTag = this.cardComponent.profileComponent.filterTag;
+          const cards = this.cardComponent.cards;
+
+          if (filterTag.length !== 0) {
+            if (!$allCardContainer.matches(".complete")) {
+              copyCards = [...cards.todo].filter((card) => {
+                if (filterTag.length > card.tag.length) return false;
+
+                for (let i = 0; i < filterTag.length; i++) {
+                  if (card.tag.indexOf(filterTag[i]) === -1) return false;
+                }
+
+                return true;
+              });
+            } else {
+              copyCards = [...cards.complete].filter((card) => {
+                if (filterTag.length > card.tag.length) return false;
+
+                for (let i = 0; i < filterTag.length; i++) {
+                  if (card.tag.indexOf(filterTag[i]) === -1) return false;
+                }
+
+                return true;
+              });
+            }
+
+            if (copyCards.length === 0) {
+              const $emptySignSpan = document.createElement("span");
+              $emptySignSpan.className = "empty-sign";
+              $emptySignSpan.textContent = "No Cards";
+
+              $allCardContainer.appendChild($emptySignSpan);
+            }
+          }
         }
       });
 
@@ -406,13 +476,40 @@ export default class Card {
           this.cardComponent.searchCard.bind(this.cardComponent)(null);
         } else if (
           this.cardComponent.cards.complete.length === 0 &&
-          !$allCardContainer.matches(".complete")
+          $allCardContainer.matches(".complete")
         ) {
           const $emptySignSpan = document.createElement("span");
           $emptySignSpan.className = "empty-sign";
           $emptySignSpan.textContent = "No Cards";
 
           $allCardContainer.appendChild($emptySignSpan);
+        } else if (
+          this.cardComponent.cards.complete.length !== 0 &&
+          $allCardContainer.matches(".complete")
+        ) {
+          let copyCards;
+          const filterTag = this.cardComponent.profileComponent.filterTag;
+          const cards = this.cardComponent.cards;
+
+          if (filterTag.length !== 0) {
+            copyCards = [...cards.complete].filter((card) => {
+              if (filterTag.length > card.tag.length) return false;
+
+              for (let i = 0; i < filterTag.length; i++) {
+                if (card.tag.indexOf(filterTag[i]) === -1) return false;
+              }
+
+              return true;
+            });
+
+            if (copyCards.length === 0) {
+              const $emptySignSpan = document.createElement("span");
+              $emptySignSpan.className = "empty-sign";
+              $emptySignSpan.textContent = "No Cards";
+
+              $allCardContainer.appendChild($emptySignSpan);
+            }
+          }
         }
       }, 600);
     }
@@ -497,6 +594,42 @@ export default class Card {
           $emptySignSpan.textContent = "No Cards";
 
           $allCardContainer.appendChild($emptySignSpan);
+        } else {
+          let copyCards;
+          const filterTag = this.cardComponent.profileComponent.filterTag;
+          const cards = this.cardComponent.cards;
+
+          if (filterTag.length !== 0) {
+            if (!$allCardContainer.matches(".complete")) {
+              copyCards = [...cards.todo].filter((card) => {
+                if (filterTag.length > card.tag.length) return false;
+
+                for (let i = 0; i < filterTag.length; i++) {
+                  if (card.tag.indexOf(filterTag[i]) === -1) return false;
+                }
+
+                return true;
+              });
+            } else {
+              copyCards = [...cards.complete].filter((card) => {
+                if (filterTag.length > card.tag.length) return false;
+
+                for (let i = 0; i < filterTag.length; i++) {
+                  if (card.tag.indexOf(filterTag[i]) === -1) return false;
+                }
+
+                return true;
+              });
+            }
+
+            if (copyCards.length === 0) {
+              const $emptySignSpan = document.createElement("span");
+              $emptySignSpan.className = "empty-sign";
+              $emptySignSpan.textContent = "No Cards";
+
+              $allCardContainer.appendChild($emptySignSpan);
+            }
+          }
         }
       });
 
@@ -541,6 +674,33 @@ export default class Card {
           $emptySignSpan.textContent = "No Cards";
 
           $allCardContainer.appendChild($emptySignSpan);
+        } else if (
+          this.cardComponent.cards.todo.length !== 0 &&
+          !$allCardContainer.matches(".complete")
+        ) {
+          let copyCards;
+          const filterTag = this.cardComponent.profileComponent.filterTag;
+          const cards = this.cardComponent.cards;
+
+          if (filterTag.length !== 0) {
+            copyCards = [...cards.todo].filter((card) => {
+              if (filterTag.length > card.tag.length) return false;
+
+              for (let i = 0; i < filterTag.length; i++) {
+                if (card.tag.indexOf(filterTag[i]) === -1) return false;
+              }
+
+              return true;
+            });
+
+            if (copyCards.length === 0) {
+              const $emptySignSpan = document.createElement("span");
+              $emptySignSpan.className = "empty-sign";
+              $emptySignSpan.textContent = "No Cards";
+
+              $allCardContainer.appendChild($emptySignSpan);
+            }
+          }
         }
       }, 600);
     }
@@ -648,6 +808,42 @@ export default class Card {
           $emptySignSpan.textContent = "No Cards";
 
           $allCardContainer.appendChild($emptySignSpan);
+        } else {
+          let copyCards;
+          const filterTag = this.cardComponent.profileComponent.filterTag;
+          const cards = this.cardComponent.cards;
+
+          if (filterTag.length !== 0) {
+            if (!$allCardContainer.matches(".complete")) {
+              copyCards = [...cards.todo].filter((card) => {
+                if (filterTag.length > card.tag.length) return false;
+
+                for (let i = 0; i < filterTag.length; i++) {
+                  if (card.tag.indexOf(filterTag[i]) === -1) return false;
+                }
+
+                return true;
+              });
+            } else {
+              copyCards = [...cards.complete].filter((card) => {
+                if (filterTag.length > card.tag.length) return false;
+
+                for (let i = 0; i < filterTag.length; i++) {
+                  if (card.tag.indexOf(filterTag[i]) === -1) return false;
+                }
+
+                return true;
+              });
+            }
+
+            if (copyCards.length === 0) {
+              const $emptySignSpan = document.createElement("span");
+              $emptySignSpan.className = "empty-sign";
+              $emptySignSpan.textContent = "No Cards";
+
+              $allCardContainer.appendChild($emptySignSpan);
+            }
+          }
         }
       });
 
@@ -716,6 +912,42 @@ export default class Card {
           $emptySignSpan.textContent = "No Cards";
 
           $allCardContainer.appendChild($emptySignSpan);
+        } else {
+          let copyCards;
+          const filterTag = this.cardComponent.profileComponent.filterTag;
+          const cards = this.cardComponent.cards;
+
+          if (filterTag.length !== 0) {
+            if (!$allCardContainer.matches(".complete")) {
+              copyCards = [...cards.todo].filter((card) => {
+                if (filterTag.length > card.tag.length) return false;
+
+                for (let i = 0; i < filterTag.length; i++) {
+                  if (card.tag.indexOf(filterTag[i]) === -1) return false;
+                }
+
+                return true;
+              });
+            } else {
+              copyCards = [...cards.complete].filter((card) => {
+                if (filterTag.length > card.tag.length) return false;
+
+                for (let i = 0; i < filterTag.length; i++) {
+                  if (card.tag.indexOf(filterTag[i]) === -1) return false;
+                }
+
+                return true;
+              });
+            }
+
+            if (copyCards.length === 0) {
+              const $emptySignSpan = document.createElement("span");
+              $emptySignSpan.className = "empty-sign";
+              $emptySignSpan.textContent = "No Cards";
+
+              $allCardContainer.appendChild($emptySignSpan);
+            }
+          }
         }
       });
 

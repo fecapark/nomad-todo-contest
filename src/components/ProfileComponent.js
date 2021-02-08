@@ -1,4 +1,8 @@
-import { UserStorage } from "../utils/CustomStorage.js";
+import {
+  FilterStorage,
+  UserStorage,
+  TagStorage,
+} from "../utils/CustomStorage.js";
 import { getTimeStatus } from "../utils/UserStatus.js";
 
 export default class ProfileComponent {
@@ -7,6 +11,7 @@ export default class ProfileComponent {
     this.modal = modal;
     this.user = UserStorage.isUserSigned ? UserStorage.getUserData() : null;
     this.cardComponent = cardComponent;
+    this.filterTag = null;
   }
 
   renderProfile() {
@@ -129,6 +134,38 @@ export default class ProfileComponent {
   }
 
   createHashButtonContainer() {
+    function createTag(
+      tag,
+      r,
+      g,
+      b,
+      inThumb = false,
+      $tagInnerContainer = null
+    ) {
+      const $tag = document.createElement("div");
+      $tag.className = "tag";
+      $tag.style.backgroundColor = `rgba(${r}, ${g}, ${b}, 0.2)`;
+
+      const $tagSpan = document.createElement("span");
+      $tagSpan.className = "tag__span";
+      $tagSpan.textContent = "#" + tag;
+
+      $tag.appendChild($tagSpan);
+
+      if (!inThumb) {
+        const $tagRemoveButton = document.createElement("button");
+        $tagRemoveButton.className = "tag__remove";
+        $tagRemoveButton.innerHTML = '<i class="fas fa-times"></i>';
+        $tagRemoveButton.addEventListener("click", () => {
+          $tagInnerContainer.removeChild($tag);
+        });
+
+        $tag.appendChild($tagRemoveButton);
+      }
+
+      return $tag;
+    }
+
     const $hashButtonContainer = document.createElement("section");
     $hashButtonContainer.className = "hash-button-container";
 
@@ -159,6 +196,63 @@ export default class ProfileComponent {
     $filterButton.className = "hash-button filter hidden";
     $filterButton.innerHTML = '<i class="fas fa-filter"></i>';
     $filterButton.title = "Filter by Hashtag";
+    $filterButton.addEventListener("click", () => {
+      const $sender = document.createElement("div");
+      $sender.className = "sender filter";
+
+      const $tagContainer = this.cardComponent.createTagContainer(true);
+      const $tagInnerContainer = $tagContainer.querySelector(
+        ".tag-inner-container"
+      );
+
+      this.filterTag.forEach((tag) => {
+        const { r, g, b } = TagStorage.getTagObj(tag);
+        const $tag = createTag(tag, r, g, b, false, $tagInnerContainer);
+
+        $tagInnerContainer.insertBefore(
+          $tag,
+          $tagContainer.querySelector(".tag__input-container")
+        );
+      });
+
+      $sender.appendChild($tagContainer);
+
+      this.modal.setState({
+        title: "Hashtag Filter",
+        html: {
+          data: $sender,
+          type: "element",
+        },
+
+        onContinue: () => {
+          const $tags = $tagInnerContainer.querySelectorAll(".tag");
+          const tags = [].slice
+            .call($tags)
+            .map(($tag) =>
+              $tag.querySelector(".tag__span").textContent.slice(1)
+            );
+
+          this.filterTag = tags;
+          FilterStorage.setAllFilter(tags);
+          this.cardComponent.searchCard.bind(this.cardComponent)(null);
+
+          const $filterContainer = document.querySelector(".filter-container");
+          const $filterClearButton = document.querySelector(
+            ".filter__filter-clear-button"
+          );
+          if (tags.length > 0) {
+            $filterContainer.classList.add("filter-active");
+            $filterClearButton.classList.add("active");
+          } else {
+            $filterContainer.classList.remove("filter-active");
+            $filterClearButton.classList.remove("active");
+          }
+        },
+
+        htmlMinHeight: 50,
+        modalMinHeight: 200,
+      });
+    });
 
     const $manageButton = document.createElement("button");
     $manageButton.className = "hash-button manage hidden";
@@ -269,6 +363,7 @@ export default class ProfileComponent {
   setState(nextData) {
     this.$target.classList.remove("hidden");
     this.user = nextData;
+    this.filterTag = FilterStorage.getAllFilters();
     this.renderProfile();
   }
 }

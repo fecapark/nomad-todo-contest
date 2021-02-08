@@ -20,6 +20,8 @@ export default class LoginComponent {
       });
     } else {
       this.user = UserStorage.getUserData();
+
+      this.cardComponent.profileComponent = this.profileComponent;
       this.profileComponent.setState(this.user);
       this.cardComponent.createCardContainer();
     }
@@ -177,6 +179,7 @@ export default class LoginComponent {
         this.$target.classList.remove("login");
         this.$target.removeChild(this.$loginContainer);
 
+        this.cardComponent.profileComponent = this.profileComponent;
         this.profileComponent.setState(this.user);
         this.cardComponent.createCardContainer();
       }, 1000);
