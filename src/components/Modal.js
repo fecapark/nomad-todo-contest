@@ -51,7 +51,19 @@ export default class Modal {
   }
 
   renderModal() {
-    const { title, text, html, onContinue } = this.data;
+    const {
+      title,
+      text,
+      html,
+      onContinue,
+      htmlMinHeight,
+      modalMinHeight,
+    } = this.data;
+
+    if (modalMinHeight) {
+      const $modal = this.$modalContainer.querySelector(".modal__content");
+      $modal.style.minHeight = `${modalMinHeight}px`;
+    }
 
     const $modalTitle = this.$modalContainer.querySelector(
       ".modal-content__title"
@@ -78,6 +90,10 @@ export default class Modal {
       const $modalHTML = this.$modalContainer.querySelector(
         ".modal-content__html"
       );
+
+      if (htmlMinHeight) {
+        $modalHTML.style.minHeight = `${htmlMinHeight}px`;
+      }
 
       $modalHTML.classList.remove("hidden");
 
@@ -115,7 +131,7 @@ export default class Modal {
   }
 
   setState(nextData) {
-    this.data = nextData; // title, text, html, onContinue
+    this.data = nextData; // title, text, html, onContinue, htmlMinHeight, modalMinHeight
 
     const modal = this.$modalContainer;
     modal.classList.remove("hidden");

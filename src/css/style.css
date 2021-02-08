@@ -476,6 +476,7 @@ body {
 }
 
 .modal-content__html {
+  position: relative;
   width: 90%;
   min-height: 200px;
   font-size: 18px;
@@ -552,12 +553,12 @@ body {
   transform: translateX(130%);
   animation: card-container__start 0.8s cubic-bezier(0.22, 0.68, 0, 1) forwards;
   animation-delay: 0.1s;
-  z-index: 10;
+  z-index: 1000;
+  overflow-y: hidden;
 }
 
 .add-card-button {
   position: absolute;
-  top: -40px;
   left: 50%;
   transform: translateX(-50%);
   width: 80px;
@@ -573,6 +574,15 @@ body {
   color: white;
   background-color: #4b61cf;
   transition: 0.35s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  z-index: 1000;
+  opacity: 0;
+}
+
+.add-card-button.loading {
+  animation: add-card-button__start-translate 0.4s
+      cubic-bezier(0.68, -0.55, 0.265, 1.55),
+    add-card-button__start-opacity 0.4s ease-in-out;
+  animation-delay: 0.3s;
 }
 
 .add-card-button:hover {
@@ -581,6 +591,7 @@ body {
 
 .tag-container {
   z-index: 100;
+  width: 100%;
   margin-bottom: 30px;
 }
 
@@ -1157,12 +1168,14 @@ input[type="number"]::-webkit-outer-spin-button {
 
 .filter-container {
   width: 100%;
-  height: 50px;
-  display: flex;
-  flex-wrap: wrap;
-  /* justify-content: center; */
-  align-items: flex-end;
+  height: 35px;
   position: relative;
+  margin-top: 15px;
+  margin-bottom: 5px;
+}
+
+.filter-container.filter-active {
+  height: 70px;
 }
 
 .filter__search-container {
@@ -1209,6 +1222,29 @@ input[type="number"]::-webkit-outer-spin-button {
 .filter__clear-button.active {
   visibility: visible;
   opacity: 1;
+}
+
+.filter__filter-clear-button {
+  display: none;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50%;
+  height: 25px;
+  background-color: #19192b79;
+  border: 0;
+  outline: 0;
+  color: rgba(255, 255, 255, 0.794);
+  cursor: pointer;
+}
+
+.filter__filter-clear-button span {
+  margin-left: 10px;
+}
+
+.filter__filter-clear-button.active {
+  display: block;
+  bottom: 0;
 }
 
 @keyframes search-bar__start {
@@ -1293,6 +1329,26 @@ input[type="number"]::-webkit-outer-spin-button {
 
   to {
     transform: translateX(0);
+  }
+}
+
+@keyframes add-card-button__start-translate {
+  from {
+    transform: translateX(30%) scale(0.5);
+  }
+
+  to {
+    transform: translateX(-50%) scale(1);
+  }
+}
+
+@keyframes add-card-button__start-opacity {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
   }
 }
 
