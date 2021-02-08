@@ -13,6 +13,74 @@ export default class CardComponent {
     this.profileComponent = null;
   }
 
+  searchCard(e, isChangeSection = false) {
+    let copyCards;
+    const $allCardContainer = document.querySelector(".all-card-container");
+    const $searchBar = document.querySelector(".filter__search-bar");
+    const text = $searchBar.value;
+
+    if (!$allCardContainer.matches(".complete")) {
+      copyCards = [...this.cards.todo];
+    } else {
+      copyCards = [...this.cards.complete];
+    }
+
+    if (text.length === 0) {
+      $allCardContainer.innerHTML = "";
+
+      copyCards.forEach((card) => {
+        card.element.classList.remove("searched");
+        $allCardContainer.appendChild(card.element);
+      });
+
+      if (copyCards.length === 0) {
+        const $emptySignSpan = document.createElement("span");
+        $emptySignSpan.className = "empty-sign";
+        $emptySignSpan.textContent = "No Cards";
+        $allCardContainer.appendChild($emptySignSpan);
+      }
+
+      return;
+    }
+
+    copyCards = copyCards.filter((card) => {
+      const cardText = card.text;
+
+      for (let i = 0; i < text.length; i++) {
+        const c = text[i];
+
+        if (cardText.indexOf(c) === -1) {
+          return false;
+        }
+      }
+
+      if (text.length > cardText.length) return false;
+
+      return true;
+    });
+
+    $allCardContainer.innerHTML = "";
+    if (copyCards.length === 0) {
+      const $emptySignSpan = document.createElement("span");
+      $emptySignSpan.className = "empty-sign";
+      $emptySignSpan.textContent = "No Results";
+      $allCardContainer.appendChild($emptySignSpan);
+    } else {
+      copyCards.sort((a, b) => {
+        return a.text.indexOf(text[0]) - b.text.indexOf(text[0]);
+      });
+
+      copyCards.forEach((card) => {
+        if (!isChangeSection) {
+          card.element.classList.add("searched");
+        } else {
+          card.element.classList.remove("searched");
+        }
+        $allCardContainer.appendChild(card.element);
+      });
+    }
+  }
+
   setHeightSize($cardContainer) {
     const brect = $cardContainer.getBoundingClientRect();
     const bodyHeight = document.body.getBoundingClientRect().height;
@@ -170,11 +238,13 @@ export default class CardComponent {
 
           const $emptySignSpan = $allCardContainer.querySelector(".empty-sign");
           if ($emptySignSpan) {
-            console.log("removed");
             $emptySignSpan.remove();
           }
 
+          const isChanged = $allCardContainer.matches(".complete");
+
           $todoSectionButton.click();
+          this.searchCard.bind(this)(null, isChanged);
         },
       });
     });
@@ -188,10 +258,21 @@ export default class CardComponent {
       this.activeSection = "todos";
       $todoSectionButton.classList.add("active");
       $completeSectionButton.classList.remove("active");
-
       $allCardContainer.classList.remove("complete");
 
+      this.cards.todo.forEach((card) => {
+        card.element.classList.remove("searched");
+      });
+      this.cards.complete.forEach((card) => {
+        card.element.classList.remove("searched");
+      });
+
       this.updateCardContainer();
+      this.searchCard.bind(this)(null, true);
+
+      if ($searchBar.value.length > 0) {
+        $searchBar.focus();
+      }
     });
 
     const $completeSectionButton = document.createElement("button");
@@ -203,19 +284,69 @@ export default class CardComponent {
       this.activeSection = "complete";
       $todoSectionButton.classList.remove("active");
       $completeSectionButton.classList.add("active");
-
       $allCardContainer.classList.add("complete");
 
+      this.cards.todo.forEach((card) => {
+        card.element.classList.remove("searched");
+      });
+      this.cards.complete.forEach((card) => {
+        card.element.classList.remove("searched");
+      });
+
       this.updateCardContainer();
+      this.searchCard.bind(this)(null, true);
+
+      if ($searchBar.value.length > 0) {
+        $searchBar.focus();
+      }
+    });
+
+    const $filterContainer = document.createElement("div");
+    $filterContainer.className = "filter-container";
+
+    const $searchContainer = document.createElement("div");
+    $searchContainer.className = "filter__search-container";
+
+    const $searchBar = document.createElement("input");
+    $searchBar.className = "filter__search-bar";
+    $searchBar.type = "text";
+    $searchBar.placeholder = "Search card";
+    $searchBar.spellcheck = false;
+    $searchBar.addEventListener("focusin", () => {
+      $clearButton.classList.add("active");
+
+      if (!$allCardContainer.matches(".complete")) {
+        $searchBar.style.borderColor = "#4b61cf";
+      } else {
+        $searchBar.style.borderColor = "#e26751";
+      }
+    });
+    $searchBar.addEventListener("focusout", () => {
+      $clearButton.classList.remove("active");
+      $searchBar.style.borderColor = "";
+    });
+    $searchBar.addEventListener("input", this.searchCard.bind(this));
+
+    const $clearButton = document.createElement("button");
+    $clearButton.className = "filter__clear-button";
+    $clearButton.innerHTML = '<i class="fas fa-times"></i>';
+    $clearButton.addEventListener("click", () => {
+      $searchBar.value = "";
+      this.searchCard.bind(this)(null);
+      $searchBar.focus();
     });
 
     const $allCardContainer = document.createElement("div");
     $allCardContainer.className = "all-card-container";
     this.$allCardContainer = $allCardContainer;
 
+    $searchContainer.appendChild($searchBar);
+    $searchContainer.appendChild($clearButton);
+    $filterContainer.appendChild($searchContainer);
     $cardContainer.appendChild($addCardButton);
     $cardContainer.appendChild($todoSectionButton);
     $cardContainer.appendChild($completeSectionButton);
+    $cardContainer.appendChild($filterContainer);
     $cardContainer.appendChild($allCardContainer);
     this.$target.appendChild($cardContainer);
 
