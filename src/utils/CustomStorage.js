@@ -9,7 +9,7 @@ const UserStorage = {
     user = user.trim();
 
     let userWords = user.split(" ");
-    console.log(userWords);
+
     userWords.forEach((word, index) => {
       const head = word[0];
       const left = word.slice(1);
@@ -133,8 +133,6 @@ const CardStorage = {
 
     const allCards = CardStorage.getAllCardFromTodo();
     const idx = CardStorage.containsTodo(id);
-
-    console.log(idx);
 
     if (idx === -1) return;
 

@@ -80,9 +80,13 @@ export default class ProfileComponent {
       const $i = $toggleBtn.querySelector("i");
 
       if ($i.classList.contains("fa-times")) {
+        $toggleBtn.style.color = "";
+        $toggleBtn.style.borderColor = "";
         $i.classList.remove("fa-times");
         $i.classList.add("fa-ellipsis-v");
       } else {
+        $toggleBtn.style.color = "white";
+        $toggleBtn.style.borderColor = "white";
         $i.classList.remove("fa-ellipsis-v");
         $i.classList.add("fa-times");
       }
@@ -128,19 +132,46 @@ export default class ProfileComponent {
     const $hashButtonContainer = document.createElement("section");
     $hashButtonContainer.className = "hash-button-container";
 
-    const $hashFilterButton = document.createElement("button");
-    $hashFilterButton.className = "hash-button filter";
-    $hashFilterButton.innerHTML = '<i class="fas fa-hashtag"></i>';
-    $hashFilterButton.title = "Filter by hashtag";
+    const $toggleButton = document.createElement("button");
+    $toggleButton.className = "hash-button toggle";
+    $toggleButton.innerHTML = '<i class="fas fa-hashtag"></i>';
+    $toggleButton.title = "Toggle Hashtag Menu";
+    $toggleButton.addEventListener("click", () => {
+      const $i = $toggleButton.querySelector("i");
 
-    $hashButtonContainer.appendChild($hashFilterButton);
+      if ($i.classList.contains("fa-times")) {
+        $toggleButton.style.color = "";
+        $toggleButton.style.borderColor = "";
+        $i.classList.remove("fa-times");
+        $i.classList.add("fa-hashtag");
+      } else {
+        $toggleButton.style.color = "white";
+        $toggleButton.style.borderColor = "white";
+        $i.classList.remove("fa-hashtag");
+        $i.classList.add("fa-times");
+      }
 
-    for (let i = 0; i < 3; i++) {
-      const $hashFilterButton_Fake = document.createElement("button");
-      $hashFilterButton_Fake.className = "hash-button filter hidden";
-      $hashFilterButton_Fake.innerHTML = '<i class="fas fa-hashtag"></i>';
-      $hashButtonContainer.appendChild($hashFilterButton_Fake);
-    }
+      $filterButton.classList.toggle("hidden");
+      $manageButton.classList.toggle("hidden");
+    });
+
+    const $filterButton = document.createElement("button");
+    $filterButton.className = "hash-button filter hidden";
+    $filterButton.innerHTML = '<i class="fas fa-filter"></i>';
+    $filterButton.title = "Filter by Hashtag";
+
+    const $manageButton = document.createElement("button");
+    $manageButton.className = "hash-button manage hidden";
+    $manageButton.innerHTML = '<i class="fas fa-tools"></i>';
+    $manageButton.title = "Edit Hashtag";
+
+    const $fake = document.createElement("button");
+    $fake.className = "hash-button hidden";
+
+    $hashButtonContainer.appendChild($toggleButton);
+    $hashButtonContainer.appendChild($filterButton);
+    $hashButtonContainer.appendChild($manageButton);
+    $hashButtonContainer.appendChild($fake);
 
     return $hashButtonContainer;
   }
