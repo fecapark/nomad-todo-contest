@@ -4,6 +4,7 @@ const CARD_KEY_TODO = "card-key-todo";
 const CARD_KEY_COMPLETE = "card-key-complete";
 const TAG_KEY = "tag-key";
 const FILTER_KEY = "filter-key";
+const LANG_KEY = "lang-key";
 
 const UserStorage = {
   convertUser: (user) => {
@@ -43,6 +44,7 @@ const UserStorage = {
     storage.removeItem(CARD_KEY_COMPLETE);
     storage.removeItem(TAG_KEY);
     storage.removeItem(FILTER_KEY);
+    storage.removeItem(LANG_KEY);
     window.location.reload();
   },
 };
@@ -232,6 +234,52 @@ const FilterStorage = {
   removeAllFilter: () => {
     storage.removeItem(FILTER_KEY);
   },
+
+  contains: (tag) => {
+    const filters = FilterStorage.getAllFilters();
+    let idx = -1;
+
+    for (let i = 0; i < filters.length; i++) {
+      if (filters[i] === tag) {
+        idx = i;
+        break;
+      }
+    }
+
+    return idx;
+  },
+
+  removeFilter: (tag) => {
+    const filters = FilterStorage.getAllFilters();
+    const idx = FilterStorage.contains(tag);
+    if (idx === -1) return;
+
+    filters.splice(idx, 1);
+    storage.setItem(FILTER_KEY, JSON.stringify(filters));
+  },
 };
 
-export { UserStorage, CardStorage, TagStorage, FilterStorage };
+const LangStorage = {
+  setLanguage: (lang) => {
+    storage.setItem(LANG_KEY, lang);
+  },
+
+  isEnglish: () => {
+    if (storage.getItem(LANG_KEY) === "ENG") return true;
+    return false;
+  },
+
+  toggleLanguage: () => {
+    if (LangStorage.isEnglish()) {
+      storage.setItem(LANG_KEY, "KOR");
+    } else {
+      storage.setItem(LANG_KEY, "ENG");
+    }
+  },
+
+  valueSeted: () => {
+    return !storage.getItem(LANG_KEY) ? false : true;
+  },
+};
+
+export { UserStorage, CardStorage, TagStorage, FilterStorage, LangStorage };

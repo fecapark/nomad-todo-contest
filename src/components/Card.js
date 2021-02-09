@@ -1,4 +1,8 @@
-import { CardStorage, TagStorage } from "../utils/CustomStorage.js";
+import {
+  CardStorage,
+  TagStorage,
+  LangStorage,
+} from "../utils/CustomStorage.js";
 import { Hash } from "../utils/Hash.js";
 
 export default class Card {
@@ -38,8 +42,9 @@ export default class Card {
       let { hour, min, sec } = this.getLeftTime();
 
       if (hour + min + sec === 0) {
-        $countdown.innerHTML =
-          "<span class='countdown__time end'>Time Over</span>";
+        $countdown.innerHTML = LangStorage.isEnglish()
+          ? "<span class='countdown__time end'>Time Over</span>"
+          : "<span class='countdown__time end'>시간 종료</span>";
 
         clearInterval(this.counter);
 
@@ -48,14 +53,18 @@ export default class Card {
 
       if (hour + min === 0) {
         if (sec < 10) sec = `0${sec}`;
-        $countdown.innerHTML = `<span class='countdown__time end-soon'>${sec}</span> sec`;
+        $countdown.innerHTML = LangStorage.isEnglish()
+          ? `<span class='countdown__time end-soon'>${sec}</span> sec`
+          : `<span class='countdown__time end-soon'>${sec}</span> 초`;
         return;
       }
 
       if (hour === 0) {
         if (min < 10) min = `0${min}`;
         if (sec < 10) sec = `0${sec}`;
-        $countdown.innerHTML = `<span class='countdown__time'>${min}</span> min <span class='countdown__time'>${sec}</span> sec`;
+        $countdown.innerHTML = LangStorage.isEnglish()
+          ? `<span class='countdown__time'>${min}</span> min <span class='countdown__time'>${sec}</span> sec`
+          : `<span class='countdown__time'>${min}</span> 분 <span class='countdown__time'>${sec}</span> 초`;
         return;
       }
 
@@ -63,7 +72,9 @@ export default class Card {
       if (min < 10) min = `0${min}`;
       if (sec < 10) sec = `0${sec}`;
 
-      $countdown.innerHTML = `<span class='countdown__time'>${hour}</span> hour <span class='countdown__time'>${min}</span> min <span class='countdown__time'>${sec}</span> sec`;
+      $countdown.innerHTML = LangStorage.isEnglish()
+        ? `<span class='countdown__time'>${hour}</span> hour <span class='countdown__time'>${min}</span> min <span class='countdown__time'>${sec}</span> sec`
+        : `<span class='countdown__time'>${hour}</span> 시간 <span class='countdown__time'>${min}</span> 분 <span class='countdown__time'>${sec}</span> 초`;
     }, 1000);
   }
 
@@ -120,12 +131,13 @@ export default class Card {
       r,
       g,
       b,
+      a,
       inThumb = false,
       $tagInnerContainer = null
     ) {
       const $tag = document.createElement("div");
       $tag.className = "tag";
-      $tag.style.backgroundColor = `rgba(${r}, ${g}, ${b}, 0.2)`;
+      $tag.style.backgroundColor = `rgba(${r}, ${g}, ${b}, ${a})`;
 
       const $tagSpan = document.createElement("span");
       $tagSpan.className = "tag__span";
@@ -216,8 +228,8 @@ export default class Card {
         ".tag-inner-container"
       );
       this.tag.forEach((tag) => {
-        const { r, g, b } = TagStorage.getTagObj(tag);
-        const $tag = createTag(tag, r, g, b, false, $tagInnerContainer);
+        const { r, g, b, a } = TagStorage.getTagObj(tag);
+        const $tag = createTag(tag, r, g, b, a, false, $tagInnerContainer);
 
         $tagInnerContainer.insertBefore(
           $tag,
@@ -227,6 +239,9 @@ export default class Card {
 
       const $todoInputContainer = this.cardComponent.createToDoContainer();
       $todoInputContainer.querySelector(".todo__input").value = this.text;
+      $todoInputContainer
+        .querySelector(".todo__input-container")
+        .classList.remove("nope");
 
       const $todoLengthContainer = $todoInputContainer.querySelector(
         ".todo__length-container"
@@ -259,12 +274,33 @@ export default class Card {
           );
           $cardTagContainer.innerHTML = "";
           this.tag.forEach((tag) => {
-            const { r, g, b } = TagStorage.getTagObj(tag);
-            const $tag = createTag(tag, r, g, b, true);
+            const { r, g, b, a } = TagStorage.getTagObj(tag);
+            const $tag = createTag(tag, r, g, b, a, true);
             $cardTagContainer.appendChild($tag);
           });
 
+          if (this.tag.length === 0) {
+            if (LangStorage.isEnglish()) {
+              $cardTagContainer.textContent = "No Tags";
+            } else {
+              $cardTagContainer.textContent = "태그 없음";
+            }
+          }
+
           const text = $todoInputContainer.querySelector(".todo__input").value;
+          if (text.length < 1 || text.length > 80) {
+            $todoInputContainer.classList.add("nope");
+            $todoInputContainer.querySelector(
+              ".todo__length-container"
+            ).style.color = "rgb(255, 129, 107)";
+            $todoInputContainer.querySelector(
+              ".todo__input"
+            ).style.borderColor = "rgb(255, 129, 107)";
+            return;
+          } else {
+            $todoInputContainer.classList.remove("nope");
+          }
+
           this.text = text;
           this.element.querySelector(".card__text").textContent = text;
 
@@ -300,7 +336,12 @@ export default class Card {
             if (copyCards.length === 0) {
               const $emptySignSpan = document.createElement("span");
               $emptySignSpan.className = "empty-sign";
-              $emptySignSpan.textContent = "No Cards";
+
+              if (LangStorage.isEnglish()) {
+                $emptySignSpan.textContent = "No Cards";
+              } else {
+                $emptySignSpan.textContent = "카드 없음";
+              }
 
               $allCardContainer.appendChild($emptySignSpan);
             }
@@ -311,6 +352,7 @@ export default class Card {
           }
         },
         htmlMinHeight: 140,
+        hideContinue: false,
       });
     }
 
@@ -397,7 +439,11 @@ export default class Card {
         } else if (this.cardComponent.cards.todo.length === 0) {
           const $emptySignSpan = document.createElement("span");
           $emptySignSpan.className = "empty-sign";
-          $emptySignSpan.textContent = "No Cards";
+          if (LangStorage.isEnglish()) {
+            $emptySignSpan.textContent = "No Cards";
+          } else {
+            $emptySignSpan.textContent = "카드 없음";
+          }
 
           $allCardContainer.appendChild($emptySignSpan);
         } else {
@@ -431,7 +477,11 @@ export default class Card {
             if (copyCards.length === 0) {
               const $emptySignSpan = document.createElement("span");
               $emptySignSpan.className = "empty-sign";
-              $emptySignSpan.textContent = "No Cards";
+              if (LangStorage.isEnglish()) {
+                $emptySignSpan.textContent = "No Cards";
+              } else {
+                $emptySignSpan.textContent = "카드 없음";
+              }
 
               $allCardContainer.appendChild($emptySignSpan);
             }
@@ -480,7 +530,11 @@ export default class Card {
         ) {
           const $emptySignSpan = document.createElement("span");
           $emptySignSpan.className = "empty-sign";
-          $emptySignSpan.textContent = "No Cards";
+          if (LangStorage.isEnglish()) {
+            $emptySignSpan.textContent = "No Cards";
+          } else {
+            $emptySignSpan.textContent = "카드 없음";
+          }
 
           $allCardContainer.appendChild($emptySignSpan);
         } else if (
@@ -505,7 +559,11 @@ export default class Card {
             if (copyCards.length === 0) {
               const $emptySignSpan = document.createElement("span");
               $emptySignSpan.className = "empty-sign";
-              $emptySignSpan.textContent = "No Cards";
+              if (LangStorage.isEnglish()) {
+                $emptySignSpan.textContent = "No Cards";
+              } else {
+                $emptySignSpan.textContent = "카드 없음";
+              }
 
               $allCardContainer.appendChild($emptySignSpan);
             }
@@ -591,7 +649,11 @@ export default class Card {
         } else if (this.cardComponent.cards.complete.length === 0) {
           const $emptySignSpan = document.createElement("span");
           $emptySignSpan.className = "empty-sign";
-          $emptySignSpan.textContent = "No Cards";
+          if (LangStorage.isEnglish()) {
+            $emptySignSpan.textContent = "No Cards";
+          } else {
+            $emptySignSpan.textContent = "카드 없음";
+          }
 
           $allCardContainer.appendChild($emptySignSpan);
         } else {
@@ -625,7 +687,11 @@ export default class Card {
             if (copyCards.length === 0) {
               const $emptySignSpan = document.createElement("span");
               $emptySignSpan.className = "empty-sign";
-              $emptySignSpan.textContent = "No Cards";
+              if (LangStorage.isEnglish()) {
+                $emptySignSpan.textContent = "No Cards";
+              } else {
+                $emptySignSpan.textContent = "카드 없음";
+              }
 
               $allCardContainer.appendChild($emptySignSpan);
             }
@@ -650,8 +716,9 @@ export default class Card {
       );
 
       const $countdown = card.element.querySelector(".card__countdown");
-      $countdown.innerHTML = "Complete";
+      $countdown.innerHTML = LangStorage.isEnglish() ? "Complete" : "완료";
       $countdown.classList.add("complete");
+
       if (card.counter) {
         clearInterval(card.counter);
         card.counter = null;
@@ -671,7 +738,11 @@ export default class Card {
         ) {
           const $emptySignSpan = document.createElement("span");
           $emptySignSpan.className = "empty-sign";
-          $emptySignSpan.textContent = "No Cards";
+          if (LangStorage.isEnglish()) {
+            $emptySignSpan.textContent = "No Cards";
+          } else {
+            $emptySignSpan.textContent = "카드 없음";
+          }
 
           $allCardContainer.appendChild($emptySignSpan);
         } else if (
@@ -696,7 +767,11 @@ export default class Card {
             if (copyCards.length === 0) {
               const $emptySignSpan = document.createElement("span");
               $emptySignSpan.className = "empty-sign";
-              $emptySignSpan.textContent = "No Cards";
+              if (LangStorage.isEnglish()) {
+                $emptySignSpan.textContent = "No Cards";
+              } else {
+                $emptySignSpan.textContent = "카드 없음";
+              }
 
               $allCardContainer.appendChild($emptySignSpan);
             }
@@ -717,13 +792,17 @@ export default class Card {
     $cardTagContainer.className = "card__tag-container";
 
     if (this.tag.length === 0) {
-      $cardTagContainer.textContent = "No Tags";
+      if (LangStorage.isEnglish()) {
+        $cardTagContainer.textContent = "No Tags";
+      } else {
+        $cardTagContainer.textContent = "태그 없음";
+      }
     } else {
       this.tag.forEach((tag) => {
         const tagObj = TagStorage.getTagObj(tag);
-        const { r, g, b } = tagObj;
+        const { r, g, b, a } = tagObj;
 
-        const $tag = createTag(tag, r, g, b, true);
+        const $tag = createTag(tag, r, g, b, a, true);
 
         $cardTagContainer.appendChild($tag);
       });
@@ -732,9 +811,17 @@ export default class Card {
     const $cardCountdown = document.createElement("div");
     $cardCountdown.className = "card__countdown";
     if (this.countdown) {
-      $cardCountdown.textContent = "Loading";
+      if (LangStorage.isEnglish()) {
+        $cardCountdown.textContent = "Loading";
+      } else {
+        $cardCountdown.textContent = "잠시만 기다려주세요";
+      }
     } else {
-      $cardCountdown.textContent = "Whenever";
+      if (LangStorage.isEnglish()) {
+        $cardCountdown.textContent = "Whenever";
+      } else {
+        $cardCountdown.textContent = "시간제한 없음";
+      }
     }
 
     const $cardMenuContainer = document.createElement("div");
@@ -805,7 +892,11 @@ export default class Card {
         } else if (this.cardComponent.cards.todo.length === 0) {
           const $emptySignSpan = document.createElement("span");
           $emptySignSpan.className = "empty-sign";
-          $emptySignSpan.textContent = "No Cards";
+          if (LangStorage.isEnglish()) {
+            $emptySignSpan.textContent = "No Cards";
+          } else {
+            $emptySignSpan.textContent = "카드 없음";
+          }
 
           $allCardContainer.appendChild($emptySignSpan);
         } else {
@@ -839,7 +930,11 @@ export default class Card {
             if (copyCards.length === 0) {
               const $emptySignSpan = document.createElement("span");
               $emptySignSpan.className = "empty-sign";
-              $emptySignSpan.textContent = "No Cards";
+              if (LangStorage.isEnglish()) {
+                $emptySignSpan.textContent = "No Cards";
+              } else {
+                $emptySignSpan.textContent = "카드 없음";
+              }
 
               $allCardContainer.appendChild($emptySignSpan);
             }
@@ -909,7 +1004,11 @@ export default class Card {
         } else if (this.cardComponent.cards.complete.length === 0) {
           const $emptySignSpan = document.createElement("span");
           $emptySignSpan.className = "empty-sign";
-          $emptySignSpan.textContent = "No Cards";
+          if (LangStorage.isEnglish()) {
+            $emptySignSpan.textContent = "No Cards";
+          } else {
+            $emptySignSpan.textContent = "카드 없음";
+          }
 
           $allCardContainer.appendChild($emptySignSpan);
         } else {
@@ -943,7 +1042,11 @@ export default class Card {
             if (copyCards.length === 0) {
               const $emptySignSpan = document.createElement("span");
               $emptySignSpan.className = "empty-sign";
-              $emptySignSpan.textContent = "No Cards";
+              if (LangStorage.isEnglish()) {
+                $emptySignSpan.textContent = "No Cards";
+              } else {
+                $emptySignSpan.textContent = "카드 없음";
+              }
 
               $allCardContainer.appendChild($emptySignSpan);
             }

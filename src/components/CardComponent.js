@@ -2,6 +2,7 @@ import {
   TagStorage,
   CardStorage,
   FilterStorage,
+  LangStorage,
 } from "../utils/CustomStorage.js";
 import Card from "./Card.js";
 
@@ -65,7 +66,11 @@ export default class CardComponent {
       if (copyCards.length === 0) {
         const $emptySignSpan = document.createElement("span");
         $emptySignSpan.className = "empty-sign";
-        $emptySignSpan.textContent = "No Cards";
+        if (LangStorage.isEnglish()) {
+          $emptySignSpan.textContent = "No Cards";
+        } else {
+          $emptySignSpan.textContent = "카드 없음";
+        }
         $allCardContainer.appendChild($emptySignSpan);
       }
 
@@ -92,7 +97,11 @@ export default class CardComponent {
     if (copyCards.length === 0) {
       const $emptySignSpan = document.createElement("span");
       $emptySignSpan.className = "empty-sign";
-      $emptySignSpan.textContent = "No Results";
+      if (LangStorage.isEnglish()) {
+        $emptySignSpan.textContent = "No Results";
+      } else {
+        $emptySignSpan.textContent = "검색결과 없음";
+      }
       $allCardContainer.appendChild($emptySignSpan);
     } else {
       copyCards.sort((a, b) => {
@@ -203,7 +212,7 @@ export default class CardComponent {
       $sender.appendChild($todoInputContainer);
 
       this.modal.setState({
-        title: "Add Card",
+        title: LangStorage.isEnglish() ? "Add Card" : "카드 추가",
         html: {
           data: $sender,
           type: "element",
@@ -232,6 +241,19 @@ export default class CardComponent {
           }
 
           const text = $todoInputContainer.querySelector(".todo__input").value;
+
+          if (text.length < 1 || text.length > 80) {
+            $todoInputContainer.classList.add("nope");
+            $todoInputContainer.querySelector(
+              ".todo__length-container"
+            ).style.color = "rgb(255, 129, 107)";
+            $todoInputContainer.querySelector(
+              ".todo__input"
+            ).style.borderColor = "rgb(255, 129, 107)";
+            return;
+          } else {
+            $todoInputContainer.classList.remove("nope");
+          }
 
           const newCard = new Card({
             tag: tags,
@@ -275,12 +297,17 @@ export default class CardComponent {
           $todoSectionButton.click();
           this.searchCard.bind(this)(null, isChanged);
         },
+        hideContinue: false,
       });
     });
 
     const $todoSectionButton = document.createElement("button");
     $todoSectionButton.className = "section-button__todo active";
-    $todoSectionButton.textContent = "Todos";
+    if (LangStorage.isEnglish()) {
+      $todoSectionButton.textContent = "Todos";
+    } else {
+      $todoSectionButton.textContent = "할 것";
+    }
     $todoSectionButton.addEventListener("click", () => {
       if (this.activeSection === "todos") return;
 
@@ -306,7 +333,17 @@ export default class CardComponent {
 
     const $completeSectionButton = document.createElement("button");
     $completeSectionButton.className = "section-button__complete";
-    $completeSectionButton.textContent = "Complete";
+    if (LangStorage.isEnglish()) {
+      $completeSectionButton.textContent = "Complete";
+    } else {
+      $completeSectionButton.textContent = "끝낸 것";
+
+      if (window.matchMedia("(max-width: 30em)").matches) {
+        $completeSectionButton.style.paddingRight = "calc(25% - 30px)";
+      } else {
+        $completeSectionButton.style.paddingRight = "60px";
+      }
+    }
     $completeSectionButton.addEventListener("click", () => {
       if (this.activeSection === "complete") return;
 
@@ -339,7 +376,9 @@ export default class CardComponent {
     const $searchBar = document.createElement("input");
     $searchBar.className = "filter__search-bar";
     $searchBar.type = "text";
-    $searchBar.placeholder = "Search card";
+    $searchBar.placeholder = LangStorage.isEnglish()
+      ? "Search card"
+      : "카드 검색";
     $searchBar.spellcheck = false;
     $searchBar.addEventListener("focusin", () => {
       $clearButton.classList.add("active");
@@ -370,8 +409,9 @@ export default class CardComponent {
 
     const $filterClearButton = document.createElement("button");
     $filterClearButton.className = "filter__filter-clear-button";
-    $filterClearButton.innerHTML =
-      '<i class="fas fa-times"></i><span>Clear All Filters</span>';
+    $filterClearButton.innerHTML = LangStorage.isEnglish()
+      ? '<i class="fas fa-times"></i><span>Clear All Filters</span>'
+      : '<i class="fas fa-times"></i><span>모든 필터 제거</span>';
     $filterClearButton.addEventListener("click", () => {
       FilterStorage.removeAllFilter();
 
@@ -429,12 +469,24 @@ export default class CardComponent {
     if ($allCardContainer.classList.contains("complete")) {
       this.cards.complete.forEach((card) => {
         $allCardContainer.appendChild(card.element);
+
+        if (card.counter) {
+          clearInterval(card.counter);
+          card.counter = null;
+          card.element.querySelector(
+            ".card__countdown"
+          ).textContent = LangStorage.isEnglish() ? "Complete" : "완료";
+        }
       });
 
       if (this.cards.complete.length === 0) {
         const $emptySignSpan = document.createElement("span");
         $emptySignSpan.className = "empty-sign";
-        $emptySignSpan.textContent = "No Cards";
+        if (LangStorage.isEnglish()) {
+          $emptySignSpan.textContent = "No Cards";
+        } else {
+          $emptySignSpan.textContent = "카드 없음";
+        }
         $allCardContainer.appendChild($emptySignSpan);
       }
     } else {
@@ -444,17 +496,22 @@ export default class CardComponent {
       if (this.cards.todo.length === 0) {
         const $emptySignSpan = document.createElement("span");
         $emptySignSpan.className = "empty-sign";
-        $emptySignSpan.textContent = "No Cards";
+        if (LangStorage.isEnglish()) {
+          $emptySignSpan.textContent = "No Cards";
+        } else {
+          $emptySignSpan.textContent = "카드 없음";
+        }
         $allCardContainer.appendChild($emptySignSpan);
       }
     }
   }
 
-  createTagContainer(filtering = false) {
-    function createTag(tag, r, g, b, inSearch = false) {
+  createTagContainer(filtering = false, editing = false) {
+    function createTag(tag, r, g, b, a, inSearch = false) {
       const $tag = document.createElement("div");
       $tag.className = "tag";
-      $tag.style.backgroundColor = `rgba(${r}, ${g}, ${b}, 0.2)`;
+      console.log(a);
+      $tag.style.backgroundColor = `rgba(${r}, ${g}, ${b}, ${a})`;
 
       const $tagSpan = document.createElement("span");
       $tagSpan.className = "tag__span";
@@ -487,6 +544,8 @@ export default class CardComponent {
     }
 
     function isValidTag(tag) {
+      tag = tag.trim().replace(" ", "");
+
       if (tag.length <= 0) return false;
 
       const checkKOR = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/;
@@ -507,7 +566,7 @@ export default class CardComponent {
 
       const tagObj = TagStorage.getTagObj(tag);
 
-      let r, g, b;
+      let r, g, b, a;
 
       if (!tagObj) {
         if (filtering) return;
@@ -515,13 +574,15 @@ export default class CardComponent {
         r = Math.floor(Math.random() * 256);
         g = Math.floor(Math.random() * 256);
         b = Math.floor(Math.random() * 256);
+        a = 0.2;
       } else {
         r = tagObj.r;
         g = tagObj.g;
         b = tagObj.b;
+        a = tagObj.a;
       }
 
-      const $tag = createTag(tag, r, g, b);
+      const $tag = createTag(tag, r, g, b, a);
       $tagInnerContainer.insertBefore($tag, $tagInputContainer);
     }
 
@@ -538,6 +599,40 @@ export default class CardComponent {
         addTagOnInnerContainer($item.textContent.slice(1));
       }
 
+      function onItemClick_Edit(e) {
+        let $item = e.target;
+
+        if (!$item.classList.contains("tag__span")) {
+          $item = $item.querySelector(".tag__span");
+        }
+
+        if (!$item) return;
+
+        const tag = $item.textContent.slice(1);
+        const { r, g, b, a } = TagStorage.getTagObj(tag);
+
+        const $tag = createTag(tag, r, g, b, a, true);
+        document.querySelector(".edit__cover").classList.add("hidden");
+
+        const $thumbContainer = document.querySelector(
+          ".edit__thumb-container"
+        );
+        $thumbContainer.innerHTML = "";
+        $thumbContainer.appendChild($tag);
+
+        const $inputR = document.querySelector(".edit-input.r");
+        $inputR.value = r;
+
+        const $inputG = document.querySelector(".edit-input.g");
+        $inputG.value = g;
+
+        const $inputB = document.querySelector(".edit-input.b");
+        $inputB.value = b;
+
+        const $inputA = document.querySelector(".edit-input.a");
+        $inputA.value = a * 100;
+      }
+
       $allTagContainer.innerHTML = "";
 
       const allTags = TagStorage.getAllTags();
@@ -545,15 +640,19 @@ export default class CardComponent {
       $allTagContainer.classList.remove("empty");
       if (allTags.length === 0) {
         $allTagContainer.classList.add("empty");
-        $allTagContainer.textContent = "No Tags";
+        if (LangStorage.isEnglish()) {
+          $allTagContainer.textContent = "No Tags";
+        } else {
+          $allTagContainer.textContent = "태그 없음";
+        }
       } else {
         allTags.forEach((tagObj) => {
-          const { text, r, g, b } = tagObj;
+          const { text, r, g, b, a } = tagObj;
 
           const $tagItem = document.createElement("div");
           $tagItem.className = "all-tag__item";
 
-          const $tag = createTag(text, r, g, b, true);
+          const $tag = createTag(text, r, g, b, a, true);
           $tagItem.appendChild($tag);
 
           $allTagContainer.appendChild($tagItem);
@@ -565,7 +664,11 @@ export default class CardComponent {
         old_element.parentNode.replaceChild(new_element, old_element);
         $allTagContainer = new_element;
 
-        $allTagContainer.addEventListener("mousedown", onItemClick);
+        if (!editing) {
+          $allTagContainer.addEventListener("mousedown", onItemClick);
+        } else {
+          $allTagContainer.addEventListener("mousedown", onItemClick_Edit);
+        }
       }
     }
 
@@ -593,14 +696,16 @@ export default class CardComponent {
     const $tagInput = document.createElement("input");
     $tagInput.className = "tag__input";
     $tagInput.type = "text";
-    $tagInput.placeholder = "Add Tag...";
+    $tagInput.placeholder = LangStorage.isEnglish()
+      ? "Add Tag..."
+      : "태그 추가...";
     $tagInput.spellcheck = false;
     $tagInput.style.cursor = "pointer";
     $tagInput.addEventListener("keyup", (e) => {
       let tag = $tagInput.value;
 
       if (e.keyCode === 13) {
-        tag = tag.trim();
+        tag = tag.trim().replace(" ", "");
 
         if (checkRemainTagOnCard(tag) || !isValidTag(tag)) {
           $tagInput.value = "";
@@ -613,11 +718,15 @@ export default class CardComponent {
             r: Math.floor(Math.random() * 256),
             g: Math.floor(Math.random() * 256),
             b: Math.floor(Math.random() * 256),
+            a: 0.2,
             cardId: [],
           };
           TagStorage.appendTag(newObj);
         }
-        addTagOnInnerContainer(tag, filtering);
+
+        if (!editing) {
+          addTagOnInnerContainer(tag, filtering);
+        }
 
         $tagInput.value = "";
 
@@ -686,7 +795,11 @@ export default class CardComponent {
 
     const $activeSpan = document.createElement("span");
     $activeSpan.className = "countdown__active-span";
-    $activeSpan.textContent = "Countdown";
+    if (LangStorage.isEnglish()) {
+      $activeSpan.textContent = "Countdown";
+    } else {
+      $activeSpan.textContent = "시간제한";
+    }
 
     const $inputContainer = document.createElement("div");
     $inputContainer.className = "countdown__input-container";
@@ -730,11 +843,19 @@ export default class CardComponent {
 
     const $hourSpan = document.createElement("span");
     $hourSpan.className = "countdown__span hour";
-    $hourSpan.textContent = "H";
+    if (LangStorage.isEnglish()) {
+      $hourSpan.textContent = "H";
+    } else {
+      $hourSpan.textContent = "시간";
+    }
 
     const $minSpan = document.createElement("span");
     $minSpan.className = "countdown__span min";
-    $minSpan.textContent = "M";
+    if (LangStorage.isEnglish()) {
+      $minSpan.textContent = "M";
+    } else {
+      $minSpan.textContent = "분";
+    }
 
     $inputContainer.appendChild($inputContainerCover);
     $inputContainer.appendChild($hourInput);
@@ -755,13 +876,15 @@ export default class CardComponent {
     $toDoContainer.className = "todo-container";
 
     const $inputContainer = document.createElement("div");
-    $inputContainer.className = "todo__input-container";
+    $inputContainer.className = "todo__input-container nope";
 
     const $toDoInput = document.createElement("input");
     $toDoInput.className = "todo__input";
     $toDoInput.type = "text";
     $toDoInput.spellcheck = false;
-    $toDoInput.placeholder = "what to do?";
+    $toDoInput.placeholder = LangStorage.isEnglish()
+      ? "what to do?"
+      : "할 일을 입력해주세요!";
     $toDoInput.addEventListener("focusin", () => {
       $removeButton.classList.add("active");
     });
@@ -771,10 +894,12 @@ export default class CardComponent {
     $toDoInput.addEventListener("input", () => {
       const textSize = $toDoInput.value.length;
 
-      if (textSize > textLimit) {
+      if (textSize > textLimit || textSize < 1) {
+        $inputContainer.classList.add("nope");
         $lengthContainer.style.color = "rgb(255, 129, 107)";
         $toDoInput.style.borderColor = "rgb(255, 129, 107)";
       } else {
+        $inputContainer.classList.remove("nope");
         $lengthContainer.style.color = "";
         $toDoInput.style.borderColor = "";
       }
@@ -792,6 +917,7 @@ export default class CardComponent {
     $removeButton.className = "todo__remove";
     $removeButton.innerHTML = '<i class="fas fa-times"></i>';
     $removeButton.addEventListener("click", () => {
+      $inputContainer.classList.add("nope");
       $toDoInput.value = "";
       $lengthContainer.textContent = `0 / ${textLimit}`;
       $lengthContainer.style.color = "";
