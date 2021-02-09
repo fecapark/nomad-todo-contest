@@ -252,7 +252,7 @@ export default class Card {
       $sender.appendChild($todoInputContainer);
 
       this.modal.setState({
-        title: "Edit Card",
+        title: LangStorage.isEnglish() ? "Edit Card" : "카드 수정",
         html: {
           data: $sender,
           type: "element",
