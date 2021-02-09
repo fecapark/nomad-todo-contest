@@ -507,13 +507,17 @@ export default class Card {
       );
 
       const $countdown = card.element.querySelector(".card__countdown");
-      $countdown.innerHTML = "Loading";
+      $countdown.innerHTML = LangStorage.isEnglish()
+        ? "Loading"
+        : "잠시만 기다려주세요";
       $countdown.classList.remove("complete");
 
       if (card.countdown) {
         card.counter = card.setCounter.bind(this)();
       } else {
-        $countdown.innerHTML = "Whenever";
+        $countdown.innerHTML = LangStorage.isEnglish()
+          ? "Whenever"
+          : "시간제한 없음";
       }
 
       setTimeout(() => {
