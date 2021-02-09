@@ -2,6 +2,8 @@ import {
   FilterStorage,
   UserStorage,
   TagStorage,
+  LangStorage,
+  CardStorage,
 } from "../utils/CustomStorage.js";
 import { getTimeStatus } from "../utils/UserStatus.js";
 
@@ -105,11 +107,26 @@ export default class ProfileComponent {
     $darkModeBtn.className = "profile-button darkmode hidden";
     $darkModeBtn.innerHTML = '<i class="fas fa-moon"></i>';
     $darkModeBtn.title = "Toggle Darkmode";
+    $darkModeBtn.addEventListener("click", () => {
+      this.modal.setState({
+        title: LangStorage.isEnglish() ? "Well.." : "음..",
+        text: LangStorage.isEnglish()
+          ? ["This has not been developed yet.", "Sorry!"]
+          : ["이 기능은 아직 구현되지 않았습니다.", "기다려주세요!"],
+        onContinue: () => {},
+        modalMinHeight: 400,
+        hideContinue: false,
+      });
+    });
 
     const $langBtn = document.createElement("button");
     $langBtn.className = "profile-button language hidden";
     $langBtn.innerHTML = '<i class="fas fa-globe-americas"></i>';
     $langBtn.title = "Toggle Language";
+    $langBtn.addEventListener("click", () => {
+      LangStorage.toggleLanguage();
+      location.reload();
+    });
 
     const $logoutBtn = document.createElement("button");
     $logoutBtn.className = "profile-button logout hidden";
@@ -117,11 +134,15 @@ export default class ProfileComponent {
     $logoutBtn.title = "Sign out";
     $logoutBtn.addEventListener("click", () => {
       this.modal.setState({
-        title: "Sign out",
-        text: ["Your all data will remove.", "Continue sign out?"],
+        title: LangStorage.isEnglish() ? "Sign out" : "로그아웃",
+        text: LangStorage.isEnglish()
+          ? ["Your all data will remove.", "Continue sign out?"]
+          : ["모든 데이터가 삭제됩니다.", "로그아웃 하시겠습니까?"],
         onContinue: () => {
           UserStorage.removeUserData();
         },
+        modalMinHeight: 400,
+        hideContinue: false,
       });
     });
 
@@ -206,8 +227,8 @@ export default class ProfileComponent {
       );
 
       this.filterTag.forEach((tag) => {
-        const { r, g, b } = TagStorage.getTagObj(tag);
-        const $tag = createTag(tag, r, g, b, false, $tagInnerContainer);
+        const { r, g, b, a } = TagStorage.getTagObj(tag);
+        const $tag = createTag(tag, r, g, b, a, false, $tagInnerContainer);
 
         $tagInnerContainer.insertBefore(
           $tag,
@@ -218,7 +239,7 @@ export default class ProfileComponent {
       $sender.appendChild($tagContainer);
 
       this.modal.setState({
-        title: "Hashtag Filter",
+        title: LangStorage.isEnglish() ? "Hashtag Filter" : "해시태그 필터링",
         html: {
           data: $sender,
           type: "element",
@@ -251,6 +272,7 @@ export default class ProfileComponent {
 
         htmlMinHeight: 50,
         modalMinHeight: 200,
+        hideContinue: false,
       });
     });
 
@@ -258,6 +280,224 @@ export default class ProfileComponent {
     $manageButton.className = "hash-button manage hidden";
     $manageButton.innerHTML = '<i class="fas fa-tools"></i>';
     $manageButton.title = "Edit Hashtag";
+    $manageButton.addEventListener("click", () => {
+      const $sender = document.createElement("div");
+      $sender.className = "sender";
+
+      const $tagContainer = this.cardComponent.createTagContainer(false, true);
+
+      const $editContainer = document.createElement("div");
+      $editContainer.className = "edit-container";
+      $editContainer.innerHTML =
+        ' \
+        <div class="edit__cover"></div> \
+        <div class="edit__thumb-container"> \
+          <div class="tag" style="background-color: rgba(0, 0, 0, 1); color: white"> \
+            <span class="tag__span"></span> \
+          </div> \
+        </div> \
+        <div class="edit__input-container"> \
+          <div class="edit__input-mini"> \
+            <span class="edit-span">R</span> \
+            <input class="edit-input r" type="range" min="0" max="255" value="0"> \
+          </div> \
+          <div class="edit__input-mini"> \
+            <span class="edit-span">G</span> \
+            <input class="edit-input g" type="range" min="0" max="255" value="0"> \
+          </div> \
+          <div class="edit__input-mini"> \
+            <span class="edit-span">B</span> \
+            <input class="edit-input b" type="range" min="0" max="255" value="0"> \
+          </div> \
+          <div class="edit__input-mini"> \
+            <span class="edit-span">A</span> \
+            <input class="edit-input a" type="range" min="0" max="100" value="0"> \
+          </div> \
+        </div> \
+        <div class="edit__button-container"> \
+          <button class="edit__apply-button"></button> \
+          <button class="edit__delete-button"></button> \
+        </div> \
+      ';
+
+      $editContainer.querySelector(
+        ".edit__delete-button"
+      ).textContent = LangStorage.isEnglish() ? "Delete Tag" : "태그 삭제";
+      $editContainer.querySelector(
+        ".edit__apply-button"
+      ).textContent = LangStorage.isEnglish() ? "Apply" : "적용";
+      $editContainer.querySelector(
+        ".tag__span"
+      ).textContent = LangStorage.isEnglish()
+        ? "#Select_Tag_First"
+        : "#태그를_선택해주세요";
+
+      const $inputR = $editContainer.querySelector(".edit-input.r");
+      $inputR.addEventListener("input", () => {
+        const $tag = $editContainer.querySelector(".tag");
+        $tag.style.backgroundColor = `rgba(${$inputR.value}, ${
+          $inputG.value
+        }, ${$inputB.value}, ${$inputA.value / 100})`;
+      });
+
+      const $inputG = $editContainer.querySelector(".edit-input.g");
+      $inputG.addEventListener("input", () => {
+        const $tag = $editContainer.querySelector(".tag");
+        $tag.style.backgroundColor = `rgba(${$inputR.value}, ${
+          $inputG.value
+        }, ${$inputB.value}, ${$inputA.value / 100})`;
+      });
+
+      const $inputB = $editContainer.querySelector(".edit-input.b");
+      $inputB.addEventListener("input", () => {
+        const $tag = $editContainer.querySelector(".tag");
+        $tag.style.backgroundColor = `rgba(${$inputR.value}, ${
+          $inputG.value
+        }, ${$inputB.value}, ${$inputA.value / 100})`;
+      });
+
+      const $inputA = $editContainer.querySelector(".edit-input.a");
+      $inputA.addEventListener("input", () => {
+        const $tag = $editContainer.querySelector(".tag");
+        $tag.style.backgroundColor = `rgba(${$inputR.value}, ${
+          $inputG.value
+        }, ${$inputB.value}, ${$inputA.value / 100})`;
+      });
+
+      const $editApplyButton = $editContainer.querySelector(
+        ".edit__apply-button"
+      );
+      $editApplyButton.addEventListener("click", () => {
+        const newR = $inputR.value;
+        const newG = $inputG.value;
+        const newB = $inputB.value;
+        const newA = $inputA.value / 100;
+
+        const tag = $editContainer
+          .querySelector(".tag__span")
+          .textContent.slice(1);
+
+        const allTagsFromStorage = TagStorage.getAllTags();
+        for (let i = 0; i < allTagsFromStorage.length; i++) {
+          if (allTagsFromStorage[i].text === tag) {
+            allTagsFromStorage[i].r = newR;
+            allTagsFromStorage[i].g = newG;
+            allTagsFromStorage[i].b = newB;
+            allTagsFromStorage[i].a = newA;
+            break;
+          }
+        }
+        window.localStorage.setItem(
+          "tag-key",
+          JSON.stringify(allTagsFromStorage)
+        );
+
+        let allTags = [].slice.call(document.querySelectorAll(".tag"));
+        allTags = allTags.filter(($tag) => {
+          return $tag.querySelector(".tag__span").textContent.slice(1) === tag;
+        });
+
+        allTags.forEach(($tag) => {
+          $tag.style.backgroundColor = `rgba(${$inputR.value}, ${
+            $inputG.value
+          }, ${$inputB.value}, ${$inputA.value / 100})`;
+        });
+      });
+
+      const $editDeleteButton = $editContainer.querySelector(
+        ".edit__delete-button"
+      );
+      $editDeleteButton.addEventListener("click", () => {
+        const tag = $editContainer
+          .querySelector(".tag__span")
+          .textContent.slice(1);
+
+        let allTags = [].slice.call(document.querySelectorAll(".tag"));
+        allTags = allTags.filter(($tag) => {
+          return $tag.querySelector(".tag__span").textContent.slice(1) === tag;
+        });
+
+        allTags.forEach(($tag) => {
+          $tag.remove();
+        });
+
+        TagStorage.removeTag(tag);
+        FilterStorage.removeFilter(tag);
+        this.filterTag = FilterStorage.getAllFilters();
+        if (this.filterTag.length === 0) {
+          document
+            .querySelector(".filter-container")
+            .classList.remove("filter-active");
+          document
+            .querySelector(".filter__filter-clear-button")
+            .classList.remove("active");
+        }
+
+        for (let i = 0; i < this.cardComponent.cards.todo.length; i++) {
+          this.cardComponent.cards.todo[i].tag = this.cardComponent.cards.todo[
+            i
+          ].tag.filter((t) => {
+            return t !== tag;
+          });
+
+          if (this.cardComponent.cards.todo[i].tag.length === 0) {
+            this.cardComponent.cards.todo[i].element.querySelector(
+              ".card__tag-container"
+            ).textContent = LangStorage.isEnglish() ? "No Tags" : "태그 없음";
+          }
+        }
+
+        for (let i = 0; i < this.cardComponent.cards.complete.length; i++) {
+          this.cardComponent.cards.complete[
+            i
+          ].tag = this.cardComponent.cards.complete[i].tag.filter((t) => {
+            return t !== tag;
+          });
+
+          if (this.cardComponent.cards.complete[i].tag.length === 0) {
+            this.cardComponent.cards.complete[i].element.querySelector(
+              ".card__tag-container"
+            ).textContent = LangStorage.isEnglish() ? "No Tags" : "태그 없음";
+          }
+        }
+
+        const todoCards = CardStorage.getAllCardFromTodo();
+        for (let i = 0; i < todoCards.length; i++) {
+          todoCards[i].tag = todoCards[i].tag.filter((t) => {
+            return t !== tag;
+          });
+        }
+        window.localStorage.setItem("card-key-todo", JSON.stringify(todoCards));
+
+        const completeCards = CardStorage.getAllCardFromComplete();
+        for (let i = 0; i < completeCards.length; i++) {
+          completeCards[i].tag = completeCards[i].tag.filter((t) => {
+            return t !== tag;
+          });
+        }
+        window.localStorage.setItem(
+          "card-key-complete",
+          JSON.stringify(completeCards)
+        );
+
+        this.cardComponent.searchCard(null);
+      });
+
+      $sender.appendChild($tagContainer);
+      $sender.appendChild($editContainer);
+
+      this.modal.setState({
+        title: LangStorage.isEnglish() ? "Edit Tag" : "태그 수정",
+        html: {
+          data: $sender,
+          type: "element",
+        },
+        onContinue: () => {
+          console.log("ww");
+        },
+        hideContinue: true,
+      });
+    });
 
     const $fake = document.createElement("button");
     $fake.className = "hash-button hidden";

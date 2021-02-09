@@ -1,3 +1,5 @@
+import { LangStorage } from "../utils/CustomStorage.js";
+
 export default class Modal {
   constructor({ $target }) {
     this.$target = $target;
@@ -36,7 +38,7 @@ export default class Modal {
 
     const $modalOkBtn = document.createElement("button");
     $modalOkBtn.className = "modal-content__ok";
-    $modalOkBtn.textContent = "Continue";
+    $modalOkBtn.textContent = LangStorage.isEnglish() ? "Continue" : "확인";
 
     $modalContent.appendChild($modalCloseBtn);
     $modalContent.appendChild($modalTitle);
@@ -58,6 +60,7 @@ export default class Modal {
       onContinue,
       htmlMinHeight,
       modalMinHeight,
+      hideContinue,
     } = this.data;
 
     if (modalMinHeight) {
@@ -108,9 +111,20 @@ export default class Modal {
       ".modal-content__ok"
     );
     $modalOkBtn.addEventListener("click", () => {
-      this.closeModal();
       onContinue();
+
+      const $filter = document.querySelector(".todo__input-container");
+
+      if (($filter && !$filter.matches(".nope")) || !$filter) {
+        this.closeModal();
+      }
     });
+
+    if (hideContinue) {
+      $modalOkBtn.classList.add("hidden");
+    } else {
+      $modalOkBtn.classList.remove("hidden");
+    }
   }
 
   closeModal() {
@@ -131,7 +145,7 @@ export default class Modal {
   }
 
   setState(nextData) {
-    this.data = nextData; // title, text, html, onContinue, htmlMinHeight, modalMinHeight
+    this.data = nextData; // title, text, html, onContinue, htmlMinHeight, modalMinHeight, hideContinue
 
     const modal = this.$modalContainer;
     modal.classList.remove("hidden");

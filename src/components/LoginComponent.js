@@ -1,4 +1,4 @@
-import { UserStorage } from "../utils/CustomStorage.js";
+import { UserStorage, LangStorage } from "../utils/CustomStorage.js";
 
 export default class LoginComponent {
   constructor({ $target, profileComponent, cardComponent }) {
@@ -15,8 +15,12 @@ export default class LoginComponent {
 
       this.renderLogin.bind(this)({
         settingUser: true,
-        loginSpanText: "Hello, there!",
-        loginInputPlaceHolder: "What's your name?",
+        loginSpanText: LangStorage.isEnglish()
+          ? "Hello, there!"
+          : "안녕하세요!",
+        loginInputPlaceHolder: LangStorage.isEnglish()
+          ? "What's your name?"
+          : "이름을 알려주세요!",
       });
     } else {
       this.user = UserStorage.getUserData();
@@ -38,12 +42,28 @@ export default class LoginComponent {
     if (settingUser) {
       loginSpan.textContent = loginSpanText;
 
+      let $langBtn = this.$loginContainer.querySelector(".login__lang-button");
+      if (!$langBtn) {
+        $langBtn = document.createElement("button");
+        $langBtn.className = "login__lang-button";
+        $langBtn.innerHTML = '<i class="fas fa-globe-americas"></i>';
+        $langBtn.title = "Toggle Language";
+        $langBtn.addEventListener("click", () => {
+          if (!this.isLoading) {
+            LangStorage.toggleLanguage();
+            location.reload();
+          }
+        });
+        this.$loginContainer.appendChild($langBtn);
+      }
+
       let loginInput = this.$loginContainer.querySelector(".login__input");
       if (!loginInput) {
         loginInput = document.createElement("input");
         loginInput.className = "login__input";
         loginInput.type = "text";
         loginInput.autofocus = true;
+        loginInput.autocomplete = "off";
         loginInput.spellcheck = false;
         loginInput.addEventListener("input", () => {
           this.toggleLoginBtn(this.isValidUser(loginInput.value));
@@ -99,8 +119,12 @@ export default class LoginComponent {
         if (!this.isLoading) {
           this.setState({
             settingUser: true,
-            loginSpanText: "Hello, there!",
-            loginInputPlaceHolder: "What's your name?",
+            loginSpanText: LangStorage.isEnglish()
+              ? "Hello, there!"
+              : "안녕하세요!",
+            loginInputPlaceHolder: LangStorage.isEnglish()
+              ? "What's your name?"
+              : "이름을 알려주세요!",
           });
         }
       });
@@ -133,7 +157,9 @@ export default class LoginComponent {
       this.user = user;
       this.setState({
         settingUser: false,
-        loginSpanText: `${user}|Is it your name?`,
+        loginSpanText: LangStorage.isEnglish()
+          ? `${user}|Is it your name?`
+          : `${user}|이게 당신의 이름인거죠?`,
         loginInputPlaceHolder: null,
       });
     }
@@ -160,11 +186,13 @@ export default class LoginComponent {
     this.isLoading = true;
 
     const ls = this.$loginContainer.querySelector(".login__span");
+    const llb = this.$loginContainer.querySelector(".login__lang-button");
     const li = this.$loginContainer.querySelector(".login__input");
     const lb = this.$loginContainer.querySelector(".login__button");
     const ubc = this.$loginContainer.querySelector(".user-button-container");
 
     if (ls) ls.classList.add("loading");
+    if (llb) llb.classList.add("loading");
     if (li) li.classList.add("loading");
     if (lb) lb.classList.add("loading");
     if (ubc) {
@@ -190,6 +218,7 @@ export default class LoginComponent {
       this.isLoading = false;
 
       if (ls) ls.classList.remove("loading");
+      if (llb) this.$loginContainer.removeChild(llb);
       if (li) this.$loginContainer.removeChild(li);
       if (lb) this.$loginContainer.removeChild(lb);
       if (ubc) this.$loginContainer.removeChild(ubc);
