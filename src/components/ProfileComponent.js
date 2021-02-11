@@ -263,17 +263,24 @@ export default class ProfileComponent {
     $toggleButton.title = "Toggle Hashtag Menu";
     $toggleButton.addEventListener("click", () => {
       const $i = $toggleButton.querySelector("i");
+      const $profileContainer = document.querySelector(".profile-container");
 
       if ($i.classList.contains("fa-times")) {
         $toggleButton.style.color = "";
         $toggleButton.style.borderColor = "";
         $i.classList.remove("fa-times");
         $i.classList.add("fa-hashtag");
+        $profileContainer.style.overflow = "hidden";
+        $filterButton.style.transitionDelay = "0.05s";
+        $manageButton.style.transitionDelay = "0s";
       } else {
         $toggleButton.style.color = "white";
         $toggleButton.style.borderColor = "white";
         $i.classList.remove("fa-hashtag");
         $i.classList.add("fa-times");
+        $profileContainer.style.overflow = "visible";
+        $manageButton.style.transitionDelay = "0.05s";
+        $filterButton.style.transitionDelay = "0s";
       }
 
       $filterButton.classList.toggle("hidden");
