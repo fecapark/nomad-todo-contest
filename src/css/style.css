@@ -199,10 +199,8 @@ body {
   width: 90%;
   height: 220px;
   margin: auto;
-  /* background-color: #2b2a49; */
   background-color: #22223a;
   border-bottom-left-radius: 3px;
-  border-bottom-right-radius: 3px;
   box-shadow: 0 20px 30px -20px #4b61cf;
   transform: translateY(-100%);
   animation: profile-container__start 0.8s cubic-bezier(0.22, 0.68, 0, 1)
@@ -215,6 +213,59 @@ body {
   padding: 0 15px;
   z-index: 20;
   border-bottom: 10px solid #4b61cf;
+  overflow: hidden;
+}
+
+.profile-container.active {
+  animation: none;
+  transform: translateY(0%);
+}
+
+.profile-container.hidden {
+  animation: none;
+  transition: 0.55s cubic-bezier(0.22, 0.68, 0, 1);
+  box-shadow: none;
+}
+
+.profile-toggle-container {
+  position: absolute;
+  top: 210px;
+  right: 5%;
+  width: 50px;
+  height: 55px;
+  border-bottom-left-radius: 10px;
+  text-align: center;
+  line-height: 65px;
+  cursor: pointer;
+  background-color: #4b61cf;
+  color: rgba(255, 255, 255, 1);
+  transition: 0.18s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  box-shadow: 0 20px 30px -20px #4b61cf;
+  animation: profile-toggle-container__start 0.8s cubic-bezier(0.22, 0.68, 0, 1)
+    forwards;
+}
+
+.profile-toggle-container.active {
+  animation: none;
+}
+
+.profile-toggle-container.hidden {
+  animation: none;
+  top: -10px;
+  transition: top 0.55s cubic-bezier(0.22, 0.68, 0, 1),
+    line-height 0.18s cubic-bezier(0.68, -0.55, 0.265, 1.55),
+    font-size 0.18s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  line-height: 55px;
+}
+
+.profile-toggle-container.active:hover {
+  line-height: 50px;
+  font-size: 18.5px;
+}
+
+.profile-toggle-container.hidden:hover {
+  line-height: 70px;
+  font-size: 18.5px;
 }
 
 .profile-text {
@@ -341,6 +392,7 @@ body {
   height: 120%;
   margin-right: 20px;
   display: flex;
+  /* flex-wrap: wrap; */
   flex-direction: column;
   justify-content: space-around;
   align-items: center;
@@ -356,7 +408,7 @@ body {
   height: 45px;
   color: #b1beff;
   font-size: 22px;
-  transition: 0.1s ease;
+  transition: 0.1s ease-in;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -546,7 +598,7 @@ body {
   height: 45px;
   color: #b1beff;
   font-size: 22px;
-  transition: 0.1s ease;
+  transition: 0.1s ease-in;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -576,18 +628,25 @@ body {
 .card-container {
   position: relative;
   width: 90%;
-  /* height: auto; */
   margin: auto;
   margin-top: 70px;
   margin-bottom: 30px;
   border-radius: 20px;
   background-color: #2b2a49;
   box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
-  transform: translateX(130%);
-  animation: card-container__start 0.8s cubic-bezier(0.22, 0.68, 0, 1) forwards;
-  animation-delay: 0.1s;
   z-index: 1000;
   overflow-y: hidden;
+  top: 0;
+  transition: 0.55s cubic-bezier(0.22, 0.68, 0, 1);
+}
+
+.card-container.loading {
+  animation: card-container__start 0.8s cubic-bezier(0.22, 0.68, 0, 1) forwards;
+  animation-delay: 0.1s;
+}
+
+.card-container.hidden {
+  transition: 0.55s cubic-bezier(0.22, 0.68, 0, 1);
 }
 
 .add-card-button {
@@ -606,15 +665,21 @@ body {
   font-size: 50px;
   color: white;
   background-color: #4b61cf;
-  transition: 0.35s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  transition: 0.35s cubic-bezier(0.68, -0.55, 0.265, 1.55),
+    top 0.55s cubic-bezier(0.22, 0.68, 0, 1);
   z-index: 1000;
-  opacity: 0;
+}
+
+.add-card-button.hidden {
+  top: 30px;
+  transition: 0.55s cubic-bezier(0.22, 0.68, 0, 1);
 }
 
 .add-card-button.loading {
+  opacity: 0;
   animation: add-card-button__start-translate 0.4s
-      cubic-bezier(0.68, -0.55, 0.265, 1.55),
-    add-card-button__start-opacity 0.4s ease-in-out;
+      cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards,
+    add-card-button__start-opacity 0.4s ease-in-out forwards;
   animation-delay: 0.3s;
 }
 
@@ -1447,6 +1512,16 @@ input[type="number"]::-webkit-outer-spin-button {
   }
 }
 
+@keyframes profile-toggle-container__start {
+  from {
+    top: -10px;
+  }
+
+  to {
+    top: 210px;
+  }
+}
+
 @keyframes card-container__start {
   from {
     transform: translateX(130%);
@@ -1497,6 +1572,10 @@ input[type="number"]::-webkit-outer-spin-button {
   .profile-container {
     padding: 0 5px;
     height: 180px;
+  }
+
+  .profile-toggle-container {
+    top: 170px;
   }
 
   .profile-text__name {
@@ -1605,5 +1684,15 @@ input[type="number"]::-webkit-outer-spin-button {
 
   .filter__search-bar {
     font-size: 15px;
+  }
+
+  @keyframes profile-toggle-container__start {
+    from {
+      top: -10px;
+    }
+
+    to {
+      top: 170px;
+    }
   }
 }
