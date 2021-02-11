@@ -19,6 +19,60 @@ export default class ProfileComponent {
   renderProfile() {
     const profileContainer = document.createElement("header");
     profileContainer.className = "profile-container";
+    profileContainer.addEventListener("animationend", () => {
+      profileContainer.classList.add("active");
+    });
+
+    const $profileToggleContainer = document.createElement("div");
+    $profileToggleContainer.className = "profile-toggle-container";
+    profileContainer.addEventListener("animationend", () => {
+      $profileToggleContainer.classList.add("active");
+    });
+
+    $profileToggleContainer.innerHTML = '<i class="fas fa-chevron-up"></i>';
+    $profileToggleContainer.addEventListener("click", () => {
+      const $cardContainer = document.querySelector(".card-container");
+      const $addCardButton = document.querySelector(".add-card-button");
+
+      if ($profileToggleContainer.matches(".active")) {
+        profileContainer.classList.remove("active");
+        $profileToggleContainer.classList.remove("active");
+        profileContainer.classList.add("hidden");
+        $profileToggleContainer.classList.add("hidden");
+        $profileToggleContainer.innerHTML =
+          '<i class="fas fa-chevron-down"></i>';
+
+        $cardContainer.classList.add("hidden");
+        if (window.matchMedia("(max-width: 30em)").matches) {
+          $cardContainer.style.top = "-180px";
+        } else {
+          $cardContainer.style.top = "-220px";
+        }
+        $addCardButton.style.top = "";
+        $addCardButton.classList.add("hidden");
+
+        const bodyHeight = document.body.getBoundingClientRect().height;
+        $cardContainer.style.height = `${bodyHeight - 100}px`;
+      } else {
+        profileContainer.classList.remove("hidden");
+        $profileToggleContainer.classList.remove("hidden");
+        $profileToggleContainer.innerHTML = '<i class="fas fa-chevron-up"></i>';
+        $cardContainer.classList.remove("hidden");
+        $cardContainer.style.top = "";
+        $addCardButton.style.top = `${
+          this.cardComponent.initialRect.top - 40
+        }px`;
+        $addCardButton.classList.remove("hidden");
+
+        const bodyHeight = document.body.getBoundingClientRect().height;
+
+        if (window.matchMedia("(max-width: 30em)").matches) {
+          $cardContainer.style.height = `${bodyHeight - 280}px`;
+        } else {
+          $cardContainer.style.height = `${bodyHeight - 320}px`;
+        }
+      }
+    });
 
     const profileText = document.createElement("section");
     profileText.className = "profile-text";
@@ -43,6 +97,7 @@ export default class ProfileComponent {
     profileContainer.appendChild(this.$hashButtonContainer);
     profileContainer.appendChild(profileText);
     this.$target.appendChild(profileContainer);
+    this.$target.appendChild($profileToggleContainer);
 
     const { todo, complete } = this.cardComponent.cards;
 
@@ -85,17 +140,29 @@ export default class ProfileComponent {
     $toggleBtn.title = "Toggle Menu";
     $toggleBtn.addEventListener("click", () => {
       const $i = $toggleBtn.querySelector("i");
+      const $profileContainer = document.querySelector(".profile-container");
+      const $profileToggleContainer = document.querySelector(
+        ".profile-toggle-container"
+      );
 
       if ($i.classList.contains("fa-times")) {
         $toggleBtn.style.color = "";
         $toggleBtn.style.borderColor = "";
         $i.classList.remove("fa-times");
         $i.classList.add("fa-ellipsis-v");
+        $profileToggleContainer.style.transform = "translateY(0)";
+        $profileContainer.style.overflow = "hidden";
+        $darkModeBtn.style.transitionDelay = "0.1s";
+        $logoutBtn.style.transitionDelay = "0s";
       } else {
         $toggleBtn.style.color = "white";
         $toggleBtn.style.borderColor = "white";
         $i.classList.remove("fa-ellipsis-v");
         $i.classList.add("fa-times");
+        $profileToggleContainer.style.transform = "translateY(-100%)";
+        $profileContainer.style.overflow = "visible";
+        $darkModeBtn.style.transitionDelay = "0s";
+        $logoutBtn.style.transitionDelay = "0.1s";
       }
 
       $darkModeBtn.classList.toggle("hidden");

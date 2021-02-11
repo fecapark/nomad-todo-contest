@@ -119,7 +119,8 @@ export default class CardComponent {
     }
   }
 
-  setHeightSize($cardContainer) {
+  setHeightSize() {
+    const $cardContainer = document.querySelector(".card-container");
     const brect = $cardContainer.getBoundingClientRect();
     const bodyHeight = document.body.getBoundingClientRect().height;
 
@@ -191,12 +192,60 @@ export default class CardComponent {
 
   createCardContainer() {
     const $cardContainer = document.createElement("main");
-    $cardContainer.className = "card-container hidden";
+    $cardContainer.className = "card-container loading";
+    $cardContainer.style.transform = "translateX(130%)";
+
+    function cardContainerAnimationEND(e) {
+      if (e.target.matches(".loading")) {
+        $cardContainer.removeEventListener(
+          "animationend",
+          cardContainerAnimationEND
+        );
+
+        $cardContainer.style.transform = "";
+        $cardContainer.classList.remove("loading");
+
+        const windowHeight = document.body.getBoundingClientRect().height;
+        const $profileContainer = document.querySelector(".profile-container");
+        const $profileToggleContainer = document.querySelector(
+          ".profile-toggle-container"
+        );
+
+        if (windowHeight < 1000) {
+          $profileContainer.classList.remove("active");
+          $profileToggleContainer.classList.remove("active");
+          $profileContainer.classList.add("hidden");
+          $profileToggleContainer.classList.add("hidden");
+          $profileToggleContainer.innerHTML =
+            '<i class="fas fa-chevron-down"></i>';
+
+          $cardContainer.classList.add("hidden");
+          if (window.matchMedia("(max-width: 30em)").matches) {
+            $cardContainer.style.top = "-180px";
+          } else {
+            $cardContainer.style.top = "-220px";
+          }
+          $addCardButton.style.top = "";
+          $addCardButton.classList.add("hidden");
+
+          $cardContainer.style.height = `${windowHeight - 100}px`;
+        }
+      }
+    }
+
+    $cardContainer.addEventListener("animationend", cardContainerAnimationEND);
 
     const $addCardButton = document.createElement("button");
     $addCardButton.className = "add-card-button loading";
     $addCardButton.innerHTML =
       '<svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 24 24" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"></path></svg>';
+
+    function addCardAnimationEND() {
+      $addCardButton.removeEventListener("animationend", addCardAnimationEND);
+      $addCardButton.classList.remove("loading");
+    }
+
+    $addCardButton.addEventListener("animationend", addCardAnimationEND);
 
     $addCardButton.addEventListener("click", () => {
       $addCardButton.blur();
@@ -436,18 +485,13 @@ export default class CardComponent {
     $cardContainer.appendChild($allCardContainer);
     this.$target.appendChild($cardContainer);
     this.$target.appendChild($addCardButton);
-    $addCardButton.style.top = `${
-      $cardContainer.getBoundingClientRect().top - 40
-    }px`;
 
-    setTimeout(() => {
-      $addCardButton.classList.remove("loading");
-      $addCardButton.style.opacity = "1";
-    }, 700);
+    this.initialRect = $cardContainer.getBoundingClientRect();
+    $addCardButton.style.top = `${this.initialRect.top - 40}px`;
 
-    this.setHeightSize.bind(this)($cardContainer);
+    this.setHeightSize();
     window.addEventListener("resize", () => {
-      this.setHeightSize.bind(this)($cardContainer);
+      this.setHeightSize();
     });
 
     this.updateCardContainer();
