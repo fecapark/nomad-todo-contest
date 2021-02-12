@@ -11,14 +11,20 @@ export default class CardComponent {
     this.$target = $target;
     this.modal = modal;
     this.cards = {
-      todo: this.initTodoCards.bind(this)(),
-      complete: this.initCompleteCards.bind(this)(),
+      todo: null,
+      pinnedTodo: null,
+      complete: null,
+      pinnedComplete: null,
     };
+    this.cards.todo = this.initTodoCards.bind(this)();
+    this.cards.complete = this.initCompleteCards.bind(this)();
+
     this.activeSection = "todos";
     this.profileComponent = null;
   }
 
   searchCard(e, isChangeSection = false) {
+    console.log("Searcj", isChangeSection);
     let copyCards;
     const $allCardContainer = document.querySelector(".all-card-container");
     const $searchBar = document.querySelector(".filter__search-bar");
@@ -27,7 +33,10 @@ export default class CardComponent {
 
     if (filterTag.length !== 0) {
       if (!$allCardContainer.matches(".complete")) {
-        copyCards = [...this.cards.todo].filter((card) => {
+        copyCards = (this.cards.pinnedTodo
+          ? [this.cards.pinnedTodo, ...this.cards.todo]
+          : [...this.cards.todo]
+        ).filter((card) => {
           if (filterTag.length > card.tag.length) return false;
 
           for (let i = 0; i < filterTag.length; i++) {
@@ -37,7 +46,10 @@ export default class CardComponent {
           return true;
         });
       } else {
-        copyCards = [...this.cards.complete].filter((card) => {
+        copyCards = (this.cards.pinnedComplete
+          ? [this.cards.pinnedComplete, ...this.cards.complete]
+          : [...this.cards.complete]
+        ).filter((card) => {
           if (filterTag.length > card.tag.length) return false;
 
           for (let i = 0; i < filterTag.length; i++) {
@@ -49,9 +61,13 @@ export default class CardComponent {
       }
     } else {
       if (!$allCardContainer.matches(".complete")) {
-        copyCards = [...this.cards.todo];
+        copyCards = this.cards.pinnedTodo
+          ? [this.cards.pinnedTodo, ...this.cards.todo]
+          : [...this.cards.todo];
       } else {
-        copyCards = [...this.cards.complete];
+        copyCards = this.cards.pinnedComplete
+          ? [this.cards.pinnedComplete, ...this.cards.complete]
+          : [...this.cards.complete];
       }
     }
 
@@ -59,7 +75,11 @@ export default class CardComponent {
       $allCardContainer.innerHTML = "";
 
       copyCards.forEach((card) => {
-        card.element.classList.remove("searched");
+        if (!isChangeSection) {
+          card.element.classList.add("searched");
+        } else {
+          card.element.classList.remove("searched");
+        }
         $allCardContainer.appendChild(card.element);
       });
 
@@ -132,11 +152,6 @@ export default class CardComponent {
     const todoCards = CardStorage.getAllCardFromTodo();
 
     todoCards.forEach((todoCard) => {
-      const $cardElement = document.createElement("div");
-      $cardElement.className = "card";
-      $cardElement.id = todoCard.id;
-      $cardElement.innerHTML = todoCard.element;
-
       const newCard = new Card({
         tag: todoCard.tag,
         countdown: todoCard.countdown,
@@ -147,9 +162,14 @@ export default class CardComponent {
         salt: todoCard.salt,
         id: todoCard.id,
         modal: this.modal,
+        pinned: todoCard.pinned,
       });
 
-      todo.push(newCard);
+      if (todoCard.pinned) {
+        this.cards.pinnedTodo = newCard;
+      } else {
+        todo.push(newCard);
+      }
     });
 
     return todo;
@@ -161,7 +181,7 @@ export default class CardComponent {
 
     completeCards.forEach((completeCard) => {
       const $cardElement = document.createElement("div");
-      $cardElement.className = "card";
+      $cardElement.className = completeCard.pinned ? "card pinned" : "card";
       $cardElement.id = completeCard.id;
       $cardElement.innerHTML = completeCard.element;
 
@@ -176,6 +196,7 @@ export default class CardComponent {
           salt: completeCard.salt,
           id: completeCard.id,
           modal: this.modal,
+          pinned: completeCard.pinned,
         },
         true
       );
@@ -184,7 +205,11 @@ export default class CardComponent {
       $countdown.innerHTML = "Complete";
       $countdown.classList.add("complete");
 
-      complete.push(newCard);
+      if (completeCard.pinned) {
+        this.cards.pinnedComplete = newCard;
+      } else {
+        complete.push(newCard);
+      }
     });
 
     return complete;
@@ -310,6 +335,7 @@ export default class CardComponent {
             text,
             cardComponent: this,
             modal: this.modal,
+            pinned: false,
           });
 
           this.cards.todo.unshift(newCard);
@@ -328,8 +354,15 @@ export default class CardComponent {
           );
 
           this.profileComponent.setProgress(
-            this.cards.complete.length,
-            this.cards.todo.length + this.cards.complete.length
+            this.cards.pinnedComplete
+              ? this.cards.complete.length + 1
+              : this.cards.complete.length,
+            (this.cards.pinnedTodo
+              ? this.cards.todo.length + 1
+              : this.cards.todo.length) +
+              (this.cards.pinnedComplete
+                ? this.cards.complete.length + 1
+                : this.cards.complete.length)
           );
 
           if (!$allCardContainer.classList.contains("complete")) {
@@ -341,10 +374,8 @@ export default class CardComponent {
             $emptySignSpan.remove();
           }
 
-          const isChanged = $allCardContainer.matches(".complete");
-
           $todoSectionButton.click();
-          this.searchCard.bind(this)(null, isChanged);
+          this.searchCard.bind(this)(null, true);
         },
         hideContinue: false,
       });
@@ -511,8 +542,21 @@ export default class CardComponent {
     $allCardContainer.innerHTML = "";
 
     if ($allCardContainer.classList.contains("complete")) {
-      this.cards.complete.forEach((card) => {
+      let cards = [];
+
+      if (this.cards.pinnedComplete) {
+        cards.push(this.cards.pinnedComplete);
+      }
+
+      cards.concat(this.cards.complete);
+
+      cards.forEach((card) => {
         $allCardContainer.appendChild(card.element);
+
+        if (card.pinned) {
+          card.element.querySelector(".pin").classList.add("off");
+          card.element.querySelector(".card__pin-text").classList.add("active");
+        }
 
         if (card.counter) {
           clearInterval(card.counter);
@@ -523,7 +567,7 @@ export default class CardComponent {
         }
       });
 
-      if (this.cards.complete.length === 0) {
+      if (cards.length === 0) {
         const $emptySignSpan = document.createElement("span");
         $emptySignSpan.className = "empty-sign";
         if (LangStorage.isEnglish()) {
@@ -534,10 +578,23 @@ export default class CardComponent {
         $allCardContainer.appendChild($emptySignSpan);
       }
     } else {
-      this.cards.todo.forEach((card) => {
+      let cards = [];
+
+      if (this.cards.pinnedTodo) {
+        cards.push(this.cards.pinnedTodo);
+      }
+
+      cards.concat(this.cards.todo);
+
+      cards.forEach((card) => {
         $allCardContainer.appendChild(card.element);
+
+        if (card.pinned) {
+          card.element.querySelector(".pin").classList.add("off");
+          card.element.querySelector(".card__pin-text").classList.add("active");
+        }
       });
-      if (this.cards.todo.length === 0) {
+      if (cards.length === 0) {
         const $emptySignSpan = document.createElement("span");
         $emptySignSpan.className = "empty-sign";
         if (LangStorage.isEnglish()) {

@@ -17,9 +17,11 @@ export default class Card {
       salt,
       id,
       modal,
+      pinned,
     },
     isComplete = false
   ) {
+    this.pinned = pinned;
     this.tag = tag;
     this.countdown = countdown;
     this.text = text;
@@ -160,6 +162,15 @@ export default class Card {
     }
 
     function spliceCardFromToDo($card, cardComponent) {
+      if (
+        cardComponent.cards.pinnedTodo &&
+        cardComponent.cards.pinnedTodo.element === $card
+      ) {
+        const tmp = cardComponent.cards.pinnedTodo;
+        cardComponent.cards.pinnedTodo = null;
+        return tmp;
+      }
+
       const todoCards = cardComponent.cards.todo;
       let cardIdx = -1;
 
@@ -174,6 +185,15 @@ export default class Card {
     }
 
     function spliceCardFromComplete($card, cardComponent) {
+      if (
+        cardComponent.cards.pinnedComplete &&
+        cardComponent.cards.pinnedComplete.element === $card
+      ) {
+        const tmp = cardComponent.cards.pinnedComplete;
+        cardComponent.cards.pinnedComplete = null;
+        return tmp;
+      }
+
       const completeCards = cardComponent.cards.complete;
       let cardIdx = -1;
 
@@ -323,7 +343,10 @@ export default class Card {
           );
 
           if (filterTag.length !== 0) {
-            copyCards = [...cards.todo].filter((card) => {
+            copyCards = (cards.pinnedTodo
+              ? [cards.pinnedTodo, ...cards.todo]
+              : [...cards.todo]
+            ).filter((card) => {
               if (filterTag.length > card.tag.length) return false;
 
               for (let i = 0; i < filterTag.length; i++) {
@@ -394,6 +417,11 @@ export default class Card {
         completeButtonEL.bind(this)
       );
 
+      const $pinButton = document.createElement("div");
+      $pinButton.className = "card-menu pin";
+      $pinButton.innerHTML = '<i class="fas fa-thumbtack"></i>';
+      $pinButton.addEventListener("mousedown", pinButtonEL);
+
       const $editButton = document.createElement("button");
       $editButton.className = "card-menu edit";
       $editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
@@ -421,10 +449,16 @@ export default class Card {
         spliceCardFromToDo($card, this.cardComponent);
         $card.parentNode.removeChild($card);
 
-        const { todo, complete } = this.cardComponent.cards;
+        const {
+          todo,
+          complete,
+          pinnedTodo,
+          pinnedComplete,
+        } = this.cardComponent.cards;
         this.cardComponent.profileComponent.setProgress(
-          complete.length,
-          todo.length + complete.length
+          pinnedComplete ? complete.length + 1 : complete.length,
+          (pinnedTodo ? todo.length + 1 : todo.length) +
+            (pinnedComplete ? complete.length + 1 : complete.length)
         );
 
         if (this.counter) {
@@ -436,7 +470,10 @@ export default class Card {
 
         if (document.querySelector(".filter__search-bar").value.length !== 0) {
           this.cardComponent.searchCard.bind(this.cardComponent)(null);
-        } else if (this.cardComponent.cards.todo.length === 0) {
+        } else if (
+          !this.cardComponent.cards.pinnedTodo &&
+          this.cardComponent.cards.todo.length === 0
+        ) {
           const $emptySignSpan = document.createElement("span");
           $emptySignSpan.className = "empty-sign";
           if (LangStorage.isEnglish()) {
@@ -453,7 +490,10 @@ export default class Card {
 
           if (filterTag.length !== 0) {
             if (!$allCardContainer.matches(".complete")) {
-              copyCards = [...cards.todo].filter((card) => {
+              copyCards = (cards.pinnedTodo
+                ? [cards.pinnedTodo, ...cards.todo]
+                : [...cards.todo]
+              ).filter((card) => {
                 if (filterTag.length > card.tag.length) return false;
 
                 for (let i = 0; i < filterTag.length; i++) {
@@ -463,7 +503,10 @@ export default class Card {
                 return true;
               });
             } else {
-              copyCards = [...cards.complete].filter((card) => {
+              copyCards = (cards.pinnedComplete
+                ? [cards.pinnedComplete, ...cards.complete]
+                : [...cards.complete]
+              ).filter((card) => {
                 if (filterTag.length > card.tag.length) return false;
 
                 for (let i = 0; i < filterTag.length; i++) {
@@ -490,20 +533,31 @@ export default class Card {
       });
 
       $cardMenuContainer.appendChild($completeButton);
+      $cardMenuContainer.appendChild($pinButton);
       $cardMenuContainer.appendChild($editButton);
       $cardMenuContainer.appendChild($newDeleteButton);
 
-      this.cardComponent.cards.todo.unshift(card);
+      if (card.pinned) {
+        this.cardComponent.cards.pinnedTodo = card;
+      } else {
+        this.cardComponent.cards.todo.unshift(card);
+      }
 
       $card.classList.add("remove");
 
       CardStorage.addCardToTodo(card);
       CardStorage.removeCardFromComplete(card.id);
 
-      const { todo, complete } = this.cardComponent.cards;
+      const {
+        todo,
+        complete,
+        pinnedTodo,
+        pinnedComplete,
+      } = this.cardComponent.cards;
       this.cardComponent.profileComponent.setProgress(
-        complete.length,
-        todo.length + complete.length
+        pinnedComplete ? complete.length + 1 : complete.length,
+        (pinnedTodo ? todo.length + 1 : todo.length) +
+          (pinnedComplete ? complete.length + 1 : complete.length)
       );
 
       const $countdown = card.element.querySelector(".card__countdown");
@@ -529,6 +583,7 @@ export default class Card {
         if (document.querySelector(".filter__search-bar").value.length !== 0) {
           this.cardComponent.searchCard.bind(this.cardComponent)(null);
         } else if (
+          !this.cardComponent.cards.pinnedComplete &&
           this.cardComponent.cards.complete.length === 0 &&
           $allCardContainer.matches(".complete")
         ) {
@@ -542,7 +597,8 @@ export default class Card {
 
           $allCardContainer.appendChild($emptySignSpan);
         } else if (
-          this.cardComponent.cards.complete.length !== 0 &&
+          (this.cardComponent.cards.pinnedComplete ||
+            this.cardComponent.cards.complete.length !== 0) &&
           $allCardContainer.matches(".complete")
         ) {
           let copyCards;
@@ -550,7 +606,10 @@ export default class Card {
           const cards = this.cardComponent.cards;
 
           if (filterTag.length !== 0) {
-            copyCards = [...cards.complete].filter((card) => {
+            copyCards = (cards.pinnedComplete
+              ? [cards.pinnedComplete, ...cards.complete]
+              : [...cards.complete]
+            ).filter((card) => {
               if (filterTag.length > card.tag.length) return false;
 
               for (let i = 0; i < filterTag.length; i++) {
@@ -586,6 +645,9 @@ export default class Card {
       }
 
       const $card = $target.parentNode.parentNode;
+
+      if ($card.matches(".pinned")) return;
+
       const card = spliceCardFromToDo($card, this.cardComponent);
       card.element = $card.cloneNode(true);
 
@@ -602,6 +664,9 @@ export default class Card {
 
       const $completeButton = $cardMenuContainer.querySelector(".complete");
       $completeButton.remove();
+
+      const $pinButton = $cardMenuContainer.querySelector(".pin");
+      $pinButton.remove();
 
       const $editButton = $cardMenuContainer.querySelector(".edit");
       $editButton.remove();
@@ -635,10 +700,16 @@ export default class Card {
         spliceCardFromComplete($card, this.cardComponent);
         $card.parentNode.removeChild($card);
 
-        const { todo, complete } = this.cardComponent.cards;
+        const {
+          todo,
+          complete,
+          pinnedTodo,
+          pinnedComplete,
+        } = this.cardComponent.cards;
         this.cardComponent.profileComponent.setProgress(
-          complete.length,
-          todo.length + complete.length
+          pinnedComplete ? complete.length + 1 : complete.length,
+          (pinnedTodo ? todo.length + 1 : todo.length) +
+            (pinnedComplete ? complete.length + 1 : complete.length)
         );
 
         if (this.counter) {
@@ -650,7 +721,10 @@ export default class Card {
 
         if (document.querySelector(".filter__search-bar").value.length !== 0) {
           this.cardComponent.searchCard.bind(this.cardComponent)(null);
-        } else if (this.cardComponent.cards.complete.length === 0) {
+        } else if (
+          !this.cardComponent.cards.pinnedComplete &&
+          this.cardComponent.cards.complete.length === 0
+        ) {
           const $emptySignSpan = document.createElement("span");
           $emptySignSpan.className = "empty-sign";
           if (LangStorage.isEnglish()) {
@@ -667,7 +741,10 @@ export default class Card {
 
           if (filterTag.length !== 0) {
             if (!$allCardContainer.matches(".complete")) {
-              copyCards = [...cards.todo].filter((card) => {
+              copyCards = (cards.pinnedTodo
+                ? [cards.pinnedTodo, ...cards.todo]
+                : [...cards.todo]
+              ).filter((card) => {
                 if (filterTag.length > card.tag.length) return false;
 
                 for (let i = 0; i < filterTag.length; i++) {
@@ -677,7 +754,10 @@ export default class Card {
                 return true;
               });
             } else {
-              copyCards = [...cards.complete].filter((card) => {
+              copyCards = (cards.pinnedComplete
+                ? [cards.pinnedComplete, ...cards.complete]
+                : [...cards.complete]
+              ).filter((card) => {
                 if (filterTag.length > card.tag.length) return false;
 
                 for (let i = 0; i < filterTag.length; i++) {
@@ -706,17 +786,27 @@ export default class Card {
       $cardMenuContainer.appendChild($resendButton);
       $cardMenuContainer.appendChild($newDeleteButton);
 
-      this.cardComponent.cards.complete.unshift(card);
+      if (card.pinned) {
+        this.cardComponent.cards.pinnedComplete = card;
+      } else {
+        this.cardComponent.cards.complete.unshift(card);
+      }
 
       $card.classList.add("remove");
 
       CardStorage.addCardToComplete(card);
       CardStorage.removeCardFromTodo(card.id);
 
-      const { todo, complete } = this.cardComponent.cards;
+      const {
+        todo,
+        complete,
+        pinnedTodo,
+        pinnedComplete,
+      } = this.cardComponent.cards;
       this.cardComponent.profileComponent.setProgress(
-        complete.length,
-        todo.length + complete.length
+        pinnedComplete ? complete.length + 1 : complete.length,
+        (pinnedTodo ? todo.length + 1 : todo.length) +
+          (pinnedComplete ? complete.length + 1 : complete.length)
       );
 
       const $countdown = card.element.querySelector(".card__countdown");
@@ -737,6 +827,7 @@ export default class Card {
         if (document.querySelector(".filter__search-bar").value.length !== 0) {
           this.cardComponent.searchCard.bind(this.cardComponent)(null);
         } else if (
+          !this.cardComponent.cards.pinnedTodo &&
           this.cardComponent.cards.todo.length === 0 &&
           !$allCardContainer.matches(".complete")
         ) {
@@ -750,7 +841,8 @@ export default class Card {
 
           $allCardContainer.appendChild($emptySignSpan);
         } else if (
-          this.cardComponent.cards.todo.length !== 0 &&
+          (this.cardComponent.cards.pinnedTodo ||
+            this.cardComponent.cards.todo.length !== 0) &&
           !$allCardContainer.matches(".complete")
         ) {
           let copyCards;
@@ -758,7 +850,10 @@ export default class Card {
           const cards = this.cardComponent.cards;
 
           if (filterTag.length !== 0) {
-            copyCards = [...cards.todo].filter((card) => {
+            copyCards = (cards.pinnedTodo
+              ? [cards.pinnedTodo, ...cards.todo]
+              : [...cards.todo]
+            ).filter((card) => {
               if (filterTag.length > card.tag.length) return false;
 
               for (let i = 0; i < filterTag.length; i++) {
@@ -784,9 +879,85 @@ export default class Card {
       }, 600);
     }
 
+    function pinButtonEL_f(e) {
+      e.stopPropagation();
+
+      let $target = e.target;
+
+      if (e.target.classList.contains("fas")) {
+        $target = $target.parentNode;
+      }
+
+      const $card = $target.parentNode.parentNode;
+      const allCards = CardStorage.getAllCardFromTodo();
+
+      if ($card.matches(".pinned")) {
+        this.cardComponent.cards.todo.unshift(
+          this.cardComponent.cards.pinnedTodo
+        );
+        this.cardComponent.cards.pinnedTodo = null;
+
+        allCards.forEach((cardObj, index) => {
+          if (cardObj.id === this.id) {
+            allCards[index].pinned = false;
+            this.pinned = false;
+          }
+        });
+
+        $card.classList.remove("pinned");
+        $card.querySelector(".pin").classList.remove("off");
+        $card.querySelector(".card__pin-text").classList.remove("active");
+      } else {
+        this.cardComponent.cards.todo = this.cardComponent.cards.todo.filter(
+          (card) => card !== this
+        );
+        if (this.cardComponent.cards.pinnedTodo) {
+          this.cardComponent.cards.pinnedTodo.element.classList.remove(
+            "pinned"
+          );
+          this.cardComponent.cards.pinnedTodo.element
+            .querySelector(".pin")
+            .classList.remove("off");
+          this.cardComponent.cards.pinnedTodo.element
+            .querySelector(".card__pin-text")
+            .classList.remove("active");
+
+          this.cardComponent.cards.todo.unshift(
+            this.cardComponent.cards.pinnedTodo
+          );
+        }
+        this.cardComponent.cards.pinnedTodo = this;
+
+        allCards.forEach((cardObj, index) => {
+          if (cardObj.id === this.id) {
+            allCards[index].pinned = true;
+            this.pinned = true;
+          } else if (cardObj.pinned) {
+            allCards[index].pinned = false;
+            this.cardComponent.cards.todo[0].pinned = false;
+          }
+        });
+
+        $card.classList.add("pinned");
+        $card.querySelector(".pin").classList.add("off");
+        $card.querySelector(".card__pin-text").classList.add("active");
+      }
+
+      console.log("wow");
+      window.localStorage.setItem("card-key-todo", JSON.stringify(allCards));
+      this.cardComponent.searchCard.bind(this.cardComponent)(null);
+    }
+    const pinButtonEL = pinButtonEL_f.bind(this);
+
     const $card = document.createElement("div");
-    $card.className = "card";
+    $card.className = this.pinned ? "card pinned" : "card";
     $card.id = this.id;
+
+    const $cardPinText = document.createElement("div");
+    $cardPinText.className = "card__pin-text";
+    $cardPinText.innerHTML = LangStorage.isEnglish()
+      ? '<i class="fas fa-thumbtack"></i> Pinned on top'
+      : '<i class="fas fa-thumbtack"></i> 상단에 고정됨';
 
     const $cardText = document.createElement("div");
     $cardText.className = "card__text";
@@ -850,6 +1021,12 @@ export default class Card {
         completeButtonEL.bind(this)
       );
 
+      const $pinButton = document.createElement("button");
+      $pinButton.className = "card-menu pin";
+      $pinButton.innerHTML = '<i class="fas fa-thumbtack"></i>';
+      $pinButton.title = "Toggle Pin";
+      $pinButton.addEventListener("mousedown", pinButtonEL);
+
       const $editButton = document.createElement("button");
       $editButton.className = "card-menu edit";
       $editButton.innerHTML = '<i class="fas fa-pencil-alt"></i>';
@@ -878,10 +1055,16 @@ export default class Card {
         spliceCardFromToDo($card, this.cardComponent);
         $card.parentNode.removeChild($card);
 
-        const { todo, complete } = this.cardComponent.cards;
+        const {
+          todo,
+          complete,
+          pinnedTodo,
+          pinnedComplete,
+        } = this.cardComponent.cards;
         this.cardComponent.profileComponent.setProgress(
-          complete.length,
-          todo.length + complete.length
+          pinnedComplete ? complete.length + 1 : complete.length,
+          (pinnedTodo ? todo.length + 1 : todo.length) +
+            (pinnedComplete ? complete.length + 1 : complete.length)
         );
 
         if (this.counter) {
@@ -893,7 +1076,10 @@ export default class Card {
 
         if (document.querySelector(".filter__search-bar").value.length !== 0) {
           this.cardComponent.searchCard.bind(this.cardComponent)(null);
-        } else if (this.cardComponent.cards.todo.length === 0) {
+        } else if (
+          !this.cardComponent.cards.pinnedTodo &&
+          this.cardComponent.cards.todo.length === 0
+        ) {
           const $emptySignSpan = document.createElement("span");
           $emptySignSpan.className = "empty-sign";
           if (LangStorage.isEnglish()) {
@@ -910,7 +1096,10 @@ export default class Card {
 
           if (filterTag.length !== 0) {
             if (!$allCardContainer.matches(".complete")) {
-              copyCards = [...cards.todo].filter((card) => {
+              copyCards = (cards.pinnedTodo
+                ? [cards.pinnedTodo, ...cards.todo]
+                : [...cards.todo]
+              ).filter((card) => {
                 if (filterTag.length > card.tag.length) return false;
 
                 for (let i = 0; i < filterTag.length; i++) {
@@ -920,7 +1109,10 @@ export default class Card {
                 return true;
               });
             } else {
-              copyCards = [...cards.complete].filter((card) => {
+              copyCards = (cards.pinnedComplete
+                ? [cards.pinnedComplete, ...cards.complete]
+                : [...cards.complete]
+              ).filter((card) => {
                 if (filterTag.length > card.tag.length) return false;
 
                 for (let i = 0; i < filterTag.length; i++) {
@@ -948,6 +1140,7 @@ export default class Card {
 
       $cardMenuContainer.appendChild($toggleMenuButton);
       $cardMenuContainer.appendChild($completeButton);
+      $cardMenuContainer.appendChild($pinButton);
       $cardMenuContainer.appendChild($editButton);
       $cardMenuContainer.appendChild($deleteButton);
     } else {
@@ -990,10 +1183,16 @@ export default class Card {
         spliceCardFromComplete($card, this.cardComponent);
         $card.parentNode.removeChild($card);
 
-        const { todo, complete } = this.cardComponent.cards;
+        const {
+          todo,
+          complete,
+          pinnedTodo,
+          pinnedComplete,
+        } = this.cardComponent.cards;
         this.cardComponent.profileComponent.setProgress(
-          complete.length,
-          todo.length + complete.length
+          pinnedComplete ? complete.length + 1 : complete.length,
+          (pinnedTodo ? todo.length + 1 : todo.length) +
+            (pinnedComplete ? complete.length + 1 : complete.length)
         );
 
         if (this.counter) {
@@ -1005,7 +1204,10 @@ export default class Card {
 
         if (document.querySelector(".filter__search-bar").value.length !== 0) {
           this.cardComponent.searchCard.bind(this.cardComponent)(null);
-        } else if (this.cardComponent.cards.complete.length === 0) {
+        } else if (
+          !this.cardComponent.cards.pinnedComplete &&
+          this.cardComponent.cards.complete.length === 0
+        ) {
           const $emptySignSpan = document.createElement("span");
           $emptySignSpan.className = "empty-sign";
           if (LangStorage.isEnglish()) {
@@ -1022,7 +1224,10 @@ export default class Card {
 
           if (filterTag.length !== 0) {
             if (!$allCardContainer.matches(".complete")) {
-              copyCards = [...cards.todo].filter((card) => {
+              copyCards = (cards.pinnedTodo
+                ? [cards.pinnedTodo, ...cards.todo]
+                : [...cards.todo]
+              ).filter((card) => {
                 if (filterTag.length > card.tag.length) return false;
 
                 for (let i = 0; i < filterTag.length; i++) {
@@ -1032,7 +1237,10 @@ export default class Card {
                 return true;
               });
             } else {
-              copyCards = [...cards.complete].filter((card) => {
+              copyCards = (cards.pinnedComplete
+                ? [cards.pinnedComplete, ...cards.complete]
+                : [...cards.complete]
+              ).filter((card) => {
                 if (filterTag.length > card.tag.length) return false;
 
                 for (let i = 0; i < filterTag.length; i++) {
@@ -1064,6 +1272,7 @@ export default class Card {
     }
 
     $card.appendChild($cardCountdown);
+    $card.appendChild($cardPinText);
     $card.appendChild($cardText);
     $card.appendChild($cardTagContainer);
     $card.appendChild($cardMenuContainer);
