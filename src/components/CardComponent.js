@@ -24,7 +24,6 @@ export default class CardComponent {
   }
 
   searchCard(e, isChangeSection = false) {
-    console.log("Searcj", isChangeSection);
     let copyCards;
     const $allCardContainer = document.querySelector(".all-card-container");
     const $searchBar = document.querySelector(".filter__search-bar");
@@ -548,7 +547,7 @@ export default class CardComponent {
         cards.push(this.cards.pinnedComplete);
       }
 
-      cards.concat(this.cards.complete);
+      cards = cards.concat(this.cards.complete);
 
       cards.forEach((card) => {
         $allCardContainer.appendChild(card.element);
@@ -561,10 +560,11 @@ export default class CardComponent {
         if (card.counter) {
           clearInterval(card.counter);
           card.counter = null;
-          card.element.querySelector(
-            ".card__countdown"
-          ).textContent = LangStorage.isEnglish() ? "Complete" : "완료";
         }
+
+        card.element.querySelector(
+          ".card__countdown"
+        ).textContent = LangStorage.isEnglish() ? "Complete" : "완료";
       });
 
       if (cards.length === 0) {
@@ -584,7 +584,7 @@ export default class CardComponent {
         cards.push(this.cards.pinnedTodo);
       }
 
-      cards.concat(this.cards.todo);
+      cards = cards.concat(this.cards.todo);
 
       cards.forEach((card) => {
         $allCardContainer.appendChild(card.element);
@@ -611,7 +611,6 @@ export default class CardComponent {
     function createTag(tag, r, g, b, a, inSearch = false) {
       const $tag = document.createElement("div");
       $tag.className = "tag";
-      console.log(a);
       $tag.style.backgroundColor = `rgba(${r}, ${g}, ${b}, ${a})`;
 
       const $tagSpan = document.createElement("span");
