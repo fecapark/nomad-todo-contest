@@ -603,9 +603,7 @@ export default class ProfileComponent {
           data: $sender,
           type: "element",
         },
-        onContinue: () => {
-          console.log("ww");
-        },
+        onContinue: () => {},
         hideContinue: true,
       });
     });

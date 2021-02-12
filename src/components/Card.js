@@ -943,7 +943,6 @@ export default class Card {
         $card.querySelector(".card__pin-text").classList.add("active");
       }
 
-      console.log("wow");
       window.localStorage.setItem("card-key-todo", JSON.stringify(allCards));
       this.cardComponent.searchCard.bind(this.cardComponent)(null);
     }
