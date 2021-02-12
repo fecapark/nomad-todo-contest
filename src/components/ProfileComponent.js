@@ -99,9 +99,18 @@ export default class ProfileComponent {
     this.$target.appendChild(profileContainer);
     this.$target.appendChild($profileToggleContainer);
 
-    const { todo, complete } = this.cardComponent.cards;
+    const {
+      todo,
+      complete,
+      pinnedComplete,
+      pinnedTodo,
+    } = this.cardComponent.cards;
 
-    this.setProgress(complete.length, todo.length + complete.length);
+    this.setProgress(
+      pinnedComplete ? complete.length + 1 : complete.length,
+      (pinnedTodo ? todo.length + 1 : todo.length) +
+        (pinnedComplete ? complete.length + 1 : complete.length)
+    );
     this.setSlider();
   }
 
@@ -507,6 +516,20 @@ export default class ProfileComponent {
             .classList.remove("active");
         }
 
+        if (this.cardComponent.cards.pinnedTodo) {
+          this.cardComponent.cards.pinnedTodo.tag = this.cardComponent.cards.pinnedTodo.tag.filter(
+            (t) => {
+              return t !== tag;
+            }
+          );
+
+          if (this.cardComponent.cards.pinnedTodo.tag.length === 0) {
+            this.cardComponent.cards.pinnedTodo.element.querySelector(
+              ".card__tag-container"
+            ).textContent = LangStorage.isEnglish() ? "No Tags" : "태그 없음";
+          }
+        }
+
         for (let i = 0; i < this.cardComponent.cards.todo.length; i++) {
           this.cardComponent.cards.todo[i].tag = this.cardComponent.cards.todo[
             i
@@ -516,6 +539,20 @@ export default class ProfileComponent {
 
           if (this.cardComponent.cards.todo[i].tag.length === 0) {
             this.cardComponent.cards.todo[i].element.querySelector(
+              ".card__tag-container"
+            ).textContent = LangStorage.isEnglish() ? "No Tags" : "태그 없음";
+          }
+        }
+
+        if (this.cardComponent.cards.pinnedComplete) {
+          this.cardComponent.cards.pinnedComplete.tag = this.cardComponent.cards.pinnedComplete.tag.filter(
+            (t) => {
+              return t !== tag;
+            }
+          );
+
+          if (this.cardComponent.cards.pinnedComplete.tag.length === 0) {
+            this.cardComponent.cards.pinnedComplete.element.querySelector(
               ".card__tag-container"
             ).textContent = LangStorage.isEnglish() ? "No Tags" : "태그 없음";
           }

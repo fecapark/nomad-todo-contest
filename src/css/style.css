@@ -1040,6 +1040,16 @@ input[type="number"]::-webkit-outer-spin-button {
   z-index: 100;
 }
 
+.card.pinned {
+  background-color: rgba(0, 0, 0, 0.15);
+}
+
+.card.pinned .card__menu-container.active .card-menu.complete {
+  cursor: default;
+  background-color: rgba(124, 184, 33, 0.404);
+  box-shadow: none;
+}
+
 .card.searched {
   animation: none;
 }
@@ -1114,6 +1124,24 @@ input[type="number"]::-webkit-outer-spin-button {
   font-weight: 600;
 }
 
+.card__pin-text {
+  display: none;
+}
+
+.card__pin-text.active {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #53d185;
+}
+
+.card__pin-text.active i {
+  margin-right: 7.5px;
+}
+
 .card__text {
   width: 80%;
   min-height: 30px;
@@ -1171,7 +1199,7 @@ input[type="number"]::-webkit-outer-spin-button {
 
 .card__menu-container.active .card-menu.complete {
   top: -54.64px;
-  left: -45px;
+  left: -35px;
   opacity: 1;
   box-shadow: 0 10px 10px #7cb82146;
   transform: scale(1.1);
@@ -1185,25 +1213,53 @@ input[type="number"]::-webkit-outer-spin-button {
   transform: scale(1.1);
 }
 
-.card__menu-container.active .card-menu.edit {
+.card__menu-container.active .card-menu.pin {
+  top: -33px;
+  left: -92px;
+  opacity: 1;
+  background-color: #84ffb5;
+  box-shadow: 0 10px 10px #84ffb546;
+  transform: scale(1.1);
+  transition-delay: 0.05s;
+}
+
+.card__menu-container.active .card-menu.pin.off {
+  background-color: #4c775e;
+  box-shadow: 0 10px 10px #4c775e46;
+}
+
+.card.complete .card__menu-container.active .card-menu.pin {
+  top: 0;
   left: -85px;
   opacity: 1;
   box-shadow: 0 10px 10px #3859ff46;
   transform: scale(1.1);
+  transition-delay: 0.05s;
+}
+
+.card__menu-container.active .card-menu.edit {
+  top: 33px;
+  left: -92px;
+  opacity: 1;
+  box-shadow: 0 10px 10px #3859ff46;
+  transform: scale(1.1);
+  transition-delay: 0.1s;
 }
 
 .card__menu-container.active .card-menu.delete {
   top: 54.64px;
-  left: -45px;
+  left: -35px;
   opacity: 1;
   box-shadow: 0 10px 10px #ff634746;
   transform: scale(1.1);
+  transition-delay: 0.15s;
 }
 
 .card.complete .card__menu-container.active .card-menu.delete {
   top: 40.64px;
   left: -55px;
   box-shadow: 0 10px 10px #e2675146;
+  transition-delay: 0.1s;
 }
 
 .card-menu {

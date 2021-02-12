@@ -75,6 +75,7 @@ const CardStorage = {
       createdAt: cardObj.createdAt,
       salt: cardObj.salt,
       id: cardObj.id,
+      pinned: cardObj.pinned,
     };
 
     allCards.unshift(card);
@@ -93,6 +94,7 @@ const CardStorage = {
       createdAt: cardObj.createdAt,
       salt: cardObj.salt,
       id: cardObj.id,
+      pinned: cardObj.pinned,
     };
 
     allCards.unshift(card);
