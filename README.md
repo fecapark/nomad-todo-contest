@@ -82,3 +82,13 @@ TodoList 컨테스트에 참가하기 위해 시작한 Vanilla Javascript 프로
 ### 2 - 5. 기타 🎸
 
 * 언어 변경 지원(한국어, 영어)
+
+<br />
+
+## 3. 기능 미리보기
+
+#### Display name 설정
+
+![init1](https://user-images.githubusercontent.com/67461578/110209926-871d2c00-7ed2-11eb-90fc-b4554c324bce.gif)
+
+
