@@ -87,29 +87,27 @@ TodoList 컨테스트에 참가하기 위해 시작한 Vanilla Javascript 프로
 
 ## 3. 기능 미리보기
 
+### 유저 🙍‍♂️
+
 #### Display name 설정
 
 ![init1](https://user-images.githubusercontent.com/67461578/110209926-871d2c00-7ed2-11eb-90fc-b4554c324bce.gif)
 
 <br />
 
+### 카드 📝
+
 #### 카드 생성 & 태그 생성
 
 ![create1](https://user-images.githubusercontent.com/67461578/110210022-01e64700-7ed3-11eb-924d-cada86ea56fd.gif)
-
-<br />
 
 #### 카드 수정
 
 ![edit1](https://user-images.githubusercontent.com/67461578/110210067-47a30f80-7ed3-11eb-9a77-f6915f41f697.gif)
 
-<br />
-
 #### 카드 삭제
 
 ![delete1](https://user-images.githubusercontent.com/67461578/110210124-9c468a80-7ed3-11eb-85b6-3f58fbae9be3.gif)
-
-<br />
 
 #### 카드 상태변경 && Todo 진척도
 
@@ -118,3 +116,30 @@ TodoList 컨테스트에 참가하기 위해 시작한 Vanilla Javascript 프로
 #### 카드 최상단 고정
 
 ![fixcard1](https://user-images.githubusercontent.com/67461578/110210375-b92f8d80-7ed4-11eb-88a9-49d6ac13d346.gif)
+
+<br />
+
+### 해시태그 🏷
+
+#### 해시태그 필터링
+
+![filter1](https://user-images.githubusercontent.com/67461578/110210617-c8630b00-7ed5-11eb-9e7c-1350cd4a9075.gif)
+
+#### 태그 색 수정
+
+![coloredit1](https://user-images.githubusercontent.com/67461578/110210710-44f5e980-7ed6-11eb-9383-d8416bccafab.gif)
+
+#### 태그 삭제
+
+![deletetag1](https://user-images.githubusercontent.com/67461578/110210728-622ab800-7ed6-11eb-8ad3-6edf2a18c45a.gif)
+
+<br />
+
+### 프로필 😎
+
+#### 프로필 숨기기 기능 + 디바이스 높이 고려해 자동 숨기기
+
+![hide1](https://user-images.githubusercontent.com/67461578/110210845-e5e4a480-7ed6-11eb-8a6d-2ccae5d242e9.gif)
+
+
+
