@@ -2,11 +2,11 @@
 
 TodoList 컨테스트에 참가하기 위해 시작한 Vanilla Javascript 프로젝트
 
-[대회 공지](https://nomadcoders.co/community/thread/182)
+* [대회 공지](https://nomadcoders.co/community/thread/182)
 
-[대회 결과](https://nomadcoders.co/community/thread/452)
+* [대회 결과](https://nomadcoders.co/community/thread/452)
 
-
+![image](https://user-images.githubusercontent.com/67461578/110208724-386c9380-7ecc-11eb-9a20-63cf4ba3c760.png)
 
 무려 🏆**인기상**에 당첨이 되었다!
 
