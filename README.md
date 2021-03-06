@@ -42,41 +42,43 @@ TodoList 컨테스트에 참가하기 위해 시작한 Vanilla Javascript 프로
 
 ### 2 - 1. 유저 🙍‍♂️
 
-* Display name 설정(최초 1회)
+* Display name 설정(최초 1회) &nbsp; [미리보기](https://github.com/pshtony1/noamd-todo-competition/#display-name-%EC%84%A4%EC%A0%95)
 
 * 로그아웃(데이터 초기화)
 
 ### 2 - 2. 카드 📝
 
-* 카드 생성/삭제
+* 카드 생성 &nbsp; [미리보기](https://github.com/pshtony1/noamd-todo-competition/#%EC%B9%B4%EB%93%9C-%EC%83%9D%EC%84%B1--%ED%83%9C%EA%B7%B8-%EC%83%9D%EC%84%B1)
 
-* 카드 수정
+* 카드 삭제 &nbsp; [미리보기](https://github.com/pshtony1/noamd-todo-competition/#%EC%B9%B4%EB%93%9C-%EC%82%AD%EC%A0%9C)
+
+* 카드 수정 &nbsp; [미리보기](https://github.com/pshtony1/noamd-todo-competition/#%EC%B9%B4%EB%93%9C-%EC%88%98%EC%A0%95)
 
 * 카드 검색(기준: 카드 내용)
 
-* 카드 상태변경 ( `Todo` - `Complete` )
+* 카드 상태변경 ( `Todo` - `Complete` ) &nbsp; [미리보기](https://github.com/pshtony1/noamd-todo-competition/#%EC%B9%B4%EB%93%9C-%EC%83%81%ED%83%9C%EB%B3%80%EA%B2%BD--todo-%EC%A7%84%EC%B2%99%EB%8F%84)
 
 * 카운트 다운(최대 24시간)
 
-* 카드 최상단 고정 기능
+* 카드 최상단 고정 기능 &nbsp; [미리보기](https://github.com/pshtony1/noamd-todo-competition/#%EC%B9%B4%EB%93%9C-%EC%B5%9C%EC%83%81%EB%8B%A8-%EA%B3%A0%EC%A0%95)
 
 ### 2 - 3. 해시태그 🏷
 
-* 각 카드에 해시태그 부여 가능(개수 제한 X)
+* 각 카드에 해시태그 부여 가능(개수 제한 X) &nbsp; [미리보기](https://github.com/pshtony1/noamd-todo-competition/#%EC%B9%B4%EB%93%9C-%EC%83%9D%EC%84%B1--%ED%83%9C%EA%B7%B8-%EC%83%9D%EC%84%B1)
 
-* 해시태그 필터링
+* 해시태그 필터링 &nbsp; [미리보기](https://github.com/pshtony1/noamd-todo-competition/#%ED%95%B4%EC%8B%9C%ED%83%9C%EA%B7%B8-%ED%95%84%ED%84%B0%EB%A7%81)
 
-* 태그 색 수정
+* 태그 색 수정 &nbsp; [미리보기](https://github.com/pshtony1/noamd-todo-competition/#%ED%83%9C%EA%B7%B8-%EC%83%89-%EC%88%98%EC%A0%95)
 
-* 태그 삭제
+* 태그 삭제 &nbsp; [미리보기](https://github.com/pshtony1/noamd-todo-competition/#%ED%83%9C%EA%B7%B8-%EC%82%AD%EC%A0%9C)
 
 ### 2 - 4. 프로필 😎
 
 * 각종 메뉴
 
-* Todo 진척도
+* Todo 진척도 &nbsp; [미리보기](https://github.com/pshtony1/noamd-todo-competition/#%EC%B9%B4%EB%93%9C-%EC%83%81%ED%83%9C%EB%B3%80%EA%B2%BD--todo-%EC%A7%84%EC%B2%99%EB%8F%84)
 
-* 프로필 숨기기 가능
+* 프로필 숨기기 가능 &nbsp; [미리보기](https://github.com/pshtony1/noamd-todo-competition/#%ED%94%84%EB%A1%9C%ED%95%84-%EC%88%A8%EA%B8%B0%EA%B8%B0-%EA%B8%B0%EB%8A%A5--%EB%94%94%EB%B0%94%EC%9D%B4%EC%8A%A4-%EB%86%92%EC%9D%B4-%EA%B3%A0%EB%A0%A4%ED%95%B4-%EC%9E%90%EB%8F%99-%EC%88%A8%EA%B8%B0%EA%B8%B0)
   * **디바이스 높이를 고려하여 자동으로 프로필이 숨겨짐(디바이스 높이 1000px 미만 시)**
 
 ### 2 - 5. 기타 🎸
