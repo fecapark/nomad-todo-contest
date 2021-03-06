@@ -123,8 +123,10 @@ TodoList 컨테스트에 참가하기 위해 시작한 Vanilla Javascript 프로
 
 단순하게 떠올린 생각으로는
 
+```
 1. ID를 중복되지 않는 1, 2, 3, 4... 로 부여하자.
 2. 해시함수에 카드의 텍스트를 넣어서 나온 결과를 ID로 사용하자.
+```
 
 가 있었다.
 
@@ -280,9 +282,34 @@ function copyCardElement() {
 
 <br />
 
-### 🙉 
+### 🙉 랜덤한 색으로 생성되는 태그의 텍스트가 보이지 않는 경우가 생겼다.
 
-### ✔
+가령, 아래와 같이 밝은 색으로 태그의 색이 설정되어 버리면 태그의 텍스트가 보이지 않았다.
+
+![image](https://user-images.githubusercontent.com/67461578/110213551-e899c680-7ee3-11eb-87fe-14708ce68749.png)![image](https://user-images.githubusercontent.com/67461578/110213630-2b5b9e80-7ee4-11eb-9946-78cc80bcda97.png)
+
+이러한 경우에 텍스트의 색을 어둡게 만드는 로직을 추가할까 고민했지만,  
+로직이 복잡해질 것 같았고 이것이 효율적인 해결 방법이 아닌 것 같았다.
+
+그러다 좋은 아이디어를 발견했다.
+
+### ✔ 태그 생성시, 태그 배경색의 alpha 값을 의도적으로 낮은 값으로 설정한다.
+
+이것이 매우 효과적이었던 이유가 있다.
+
+```
+1. 기본적으로 프로젝트는 다크모드이기 때문에, alpha 값을 낮게 설정하면 그만큼 태그의 색도 어두워진다.
+2. 태그의 텍스트가 태그 배경색에 비해 상대적으로 어두워진다.
+```
+
+다음은 태그 배경색의 alpha값에 따른 태그의 모습이다.
+
+| alpha=1 | alpha=0.6 | alpha=0.2 |
+| - | - | - |
+| ![image](https://user-images.githubusercontent.com/67461578/110213833-1b908a00-7ee5-11eb-8242-6ead10b33900.png) | ![image](https://user-images.githubusercontent.com/67461578/110213846-2814e280-7ee5-11eb-8ab2-e8308512456f.png) | ![image](https://user-images.githubusercontent.com/67461578/110213859-3236e100-7ee5-11eb-9326-ec72feb4079a.png) |
+
+정말 간단하게 문제를 해결할 수 있었다!
+
 
 <br />
 
