@@ -310,6 +310,60 @@ function copyCardElement() {
 
 정말 간단하게 문제를 해결할 수 있었다!
 
+<br />
+
+### 🙉 'element들의 애니메이션이 끝났을 때' 를 setTimeout으로 캐치했다.
+
+이를 적용하기 전에, 구글링을 해보니 대부분의 Stackoverflow, 블로그, 포스트 등에서 `setTimeout`을 사용함을 알게되었다.
+
+예를 들어,
+
+```css
+/* CSS */
+
+.element {
+  ... 중략
+  opacity: 0;
+  animation: customAnimation 0.5s linear forwards;
+}
+
+@keyframes customAnimation {
+  from {
+    opacity: 0;
+  }
+  
+  to {
+    opacity: 1;
+  }
+}
+```
+
+```js
+// JS
+
+const element = document.querySelector(".element");
+
+// 애니메이션 종료 (css와 마찬가지로 0.5초로 설정)
+setTimeout(whenAnimationEnd, 500);
+```
+
+처럼 말이다.
+
+그래서 당연히 이것이 정석적인 방법인줄 알고있었다.
+
+### ✔ 그러나, animationend 이벤트가 존재한다.
+
+```js
+// JS
+
+const element = document.querySelector(".element");
+
+// 애니메이션 종료이벤트
+element.addEventListener("animationend", whenAnimationEnd);
+```
+
+이것을 알게된 후 멘탈이 나갈 뻔했다. 😭😭  
+부족한 내 검색능력을 탓했다.
 
 <br />
 
