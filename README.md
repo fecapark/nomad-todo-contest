@@ -1,4 +1,4 @@
-# NomadCoders Todo Competition | Vanilla Javascript
+# NomadCoders TodoList Competition
 
 TodoList 컨테스트에 참가하기 위해 시작한 Vanilla Javascript 프로젝트
 
