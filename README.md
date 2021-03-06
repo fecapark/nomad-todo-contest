@@ -114,6 +114,178 @@ TodoList 컨테스트에 참가하기 위해 시작한 Vanilla Javascript 프로
 
 <br />
 
+## 4. 문제 및 해결
+
+### 🙉 카드 각각에 고유한 ID를 부여하는 좋은 방법?
+
+`LocalHost`에 저장된 카드에 접근하기 위한 식별자로 각 카드 데이터에 ID를 부여하기로 했다.  
+그러나 ID를 어떤 기준으로 만들지 고민이 되었다.
+
+단순하게 떠올린 생각으로는
+
+1. ID를 중복되지 않는 1, 2, 3, 4... 로 부여하자.
+2. 해시함수에 카드의 텍스트를 넣어서 나온 결과를 ID로 사용하자.
+
+가 있었다.
+
+그러나 이 두 방법은 전부 치명적인(?) 단점이 존재했다.
+
+1번은 ID를 부여하는 구조를 효율적으로 짜게 되면 로직이 매우 복잡해진다는 것(+ 메모리도 사용해야 함), 단순하게 짠다고 하더라도 카드를 많이 생성한다면 ID의 크기가 무한히 커진다는 것.
+2번은 같은 텍스트를 가진 카드가 존재한다면, 유일한 ID가 보장되지 않는다는 점.
+
+이를 해결하기 위해 정말 좋은 아이디어를 떠올렸다.
+
+### ✔ `Salt`를 이용해서 ID를 생성했다.
+
+1. 10글자의 랜덤한 `Salt`를 생성했다.
+
+```js
+getSalt: () => {
+  let salt = "";
+
+  for (let i = 0; i < 10; i++) {
+    if (Math.random() > 0.5) {
+      const ascii = Math.floor(Math.random() * 26) + 97;
+      const c = String.fromCharCode(ascii);
+      salt += c;
+    } else {
+      salt += Math.floor(Math.random() * 10);
+    }
+  }
+
+  return salt;
+},
+```
+
+2. Hash 함수를 만들었다. 32bit의 정수로 변환하는 함수이다.
+
+```js
+createHash(str) {
+  let hash = 0;
+  let chr;
+
+  for (let i = 0; i < str.length; i++) {
+    chr = str.charCodeAt(i);
+    hash = (hash << 5) - hash + chr;
+    hash |= 0; // Convert to 32bit integer
+  }
+
+  return hash;
+},
+```
+
+3. 카드 텍스트와 `Salt`를 결합하여 고유한 ID를 생성했다!
+
+```js
+const toConvert = card.text + getSalt();
+const id = createHash(toConvert);  // Unique ID! 
+```
+
+<br />
+
+### 🙉 Modal을 효율적으로 재사용하고 싶었다.
+
+카드 생성, 카드 수정, 해시태그 필터링 등등 여러 기능에 같은 Modal을 재사용하고 싶었다.  
+`React`라면 state를 이용해 손쉽게 재사용이 가능했지만, 바닐라라 그렇기는 힘들었다.
+
+### ✔ `setState`를 직접 만들었다.
+
+1. modal Class에 `setState` 메서드를 추가했다. 
+
+```js
+setState(nextData) {
+  this.data = nextData;
+
+  ... 중략
+
+  this.renderModal();
+}
+```
+
+2. `renderModal` 메서드에서 `this.data`를 이용해 modal의 필요한 부분만 재렌더링한다.
+
+```js
+renderModal() {
+  const {
+    title,
+    ...생략,
+  } = this.data;
+  
+  // modal의 title 재렌더링
+  const $modalTitle = this.$modalContainer.querySelector(
+    ".modal-content__title"
+  );
+  $modalTitle.textContent = title;
+
+  ... 중략
+}
+```
+
+<br />
+
+### 🙉 Node.cloneNode(true)가 Node의 EventListener까지 복사하지 않았다.
+
+가령 카드의 상태를 `todo`에서 `complete`로 변화시킬 때, `todo` 상태인 카드의 element를 cloneNode를 이용해 **복사**하여 `complete`로 옮기는 로직이 있었다.
+
+그런데 위와 같은 문제때문에 기존 카드에 있던 이벤트들이 전부 증발해버리는 문제가 생겼다.
+
+### ✔ 어쩔 수 없이 하드코딩했다. 대신 클로저를 이용해 바인딩 문제를 쉽게 해결했다.
+
+말 그대로 증발된 이벤트들을 전부 다시 적용해주었다.  
+이 과정에서, `addEventListener`를 사용했기 때문에 이벤트들을 콜백함수의 형태로 넘겨주어야했다.
+
+1. 추가할 이벤트들을 클로저의 형태로 미리 만들어두었다.
+
+```js
+function copyCardElement() {
+  // 카드 수정 버튼에 적용될 이벤트
+  function editButtonEL(e) {
+    ... 생략
+  }
+
+  // 카드 상태변경 버튼에 적용될 이벤트
+  function toggleStateButtonEL(e) {
+    ... 생략
+  }
+}
+```
+
+2. 상태를 변경할 카드를 가져오고, cloneNode로 복사한 뒤 이벤트를 전부 적용해주었다.
+
+```js
+function copyCardElement() {
+  // 카드 수정 버튼에 적용될 이벤트
+  function editButtonEL(e) {
+    ... 생략
+  }
+
+  // 카드 상태변경 버튼에 적용될 이벤트
+  function toggleStateButtonEL(e) {
+    ... 생략
+  }
+  
+  const newCard = new Card();
+  newCard.element = getChangedCard().element.cloneNode(true);
+  
+  const newCard_editButton = newCard.element.querySelector(".edit-button");
+  newCard_editButton.addEventListener("click", editButtonEL);
+  
+  const newCard_toggleStateButton = newCard.element.querySelector(".toggle-button");
+  newCard_toggleStateButton.addEventListener("click", toggleStateButtonEL);
+  
+  return newCard;
+}
+
+```
+
+<br />
+
+### 🙉 
+
+### ✔
+
+<br />
+
 ## 부록. 기능 미리보기
 
 ### 유저 🙍‍♂️
