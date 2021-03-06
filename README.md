@@ -366,6 +366,12 @@ element.addEventListener("animationend", whenAnimationEnd);
 부족한 내 검색능력을 탓했다.
 
 <br />
+<br />
+<br />
+
+---
+
+<br />
 
 ## 부록. 기능 미리보기
 
