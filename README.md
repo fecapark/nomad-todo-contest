@@ -91,4 +91,30 @@ TodoList 컨테스트에 참가하기 위해 시작한 Vanilla Javascript 프로
 
 ![init1](https://user-images.githubusercontent.com/67461578/110209926-871d2c00-7ed2-11eb-90fc-b4554c324bce.gif)
 
+<br />
 
+#### 카드 생성 & 태그 생성
+
+![create1](https://user-images.githubusercontent.com/67461578/110210022-01e64700-7ed3-11eb-924d-cada86ea56fd.gif)
+
+<br />
+
+#### 카드 수정
+
+![edit1](https://user-images.githubusercontent.com/67461578/110210067-47a30f80-7ed3-11eb-9a77-f6915f41f697.gif)
+
+<br />
+
+#### 카드 삭제
+
+![delete1](https://user-images.githubusercontent.com/67461578/110210124-9c468a80-7ed3-11eb-85b6-3f58fbae9be3.gif)
+
+<br />
+
+#### 카드 상태변경 && Todo 진척도
+
+![statechange1](https://user-images.githubusercontent.com/67461578/110210263-2c84cf80-7ed4-11eb-9c42-306735c6958e.gif)
+
+#### 카드 최상단 고정
+
+![fixcard1](https://user-images.githubusercontent.com/67461578/110210375-b92f8d80-7ed4-11eb-88a9-49d6ac13d346.gif)
