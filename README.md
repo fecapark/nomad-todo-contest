@@ -225,63 +225,6 @@ renderModal() {
 
 <br />
 
-### 🙉 Node.cloneNode(true)가 Node의 EventListener까지 복사하지 않았다.
-
-가령 카드의 상태를 `todo`에서 `complete`로 변화시킬 때, `todo` 상태인 카드의 element를 cloneNode를 이용해 **복사**하여 `complete`로 옮기는 로직이 있었다.
-
-그런데 위와 같은 문제때문에 기존 카드에 있던 이벤트들이 전부 증발해버리는 문제가 생겼다.
-
-### ✔ 어쩔 수 없이 하드코딩했다. 대신 클로저를 이용해 바인딩 문제를 쉽게 해결했다.
-
-말 그대로 증발된 이벤트들을 전부 다시 적용해주었다.  
-이 과정에서, `addEventListener`를 사용했기 때문에 이벤트들을 콜백함수의 형태로 넘겨주어야했다.
-
-1. 추가할 이벤트들을 클로저의 형태로 미리 만들어두었다.
-
-```js
-function copyCardElement() {
-  // 카드 수정 버튼에 적용될 이벤트
-  function editButtonEL(e) {
-    ... 생략
-  }
-
-  // 카드 상태변경 버튼에 적용될 이벤트
-  function toggleStateButtonEL(e) {
-    ... 생략
-  }
-}
-```
-
-2. 상태를 변경할 카드를 가져오고, cloneNode로 복사한 뒤 이벤트를 전부 적용해주었다.
-
-```js
-function copyCardElement() {
-  // 카드 수정 버튼에 적용될 이벤트
-  function editButtonEL(e) {
-    ... 생략
-  }
-
-  // 카드 상태변경 버튼에 적용될 이벤트
-  function toggleStateButtonEL(e) {
-    ... 생략
-  }
-  
-  const newCard = new Card();
-  newCard.element = getChangedCard().element.cloneNode(true);
-  
-  const newCard_editButton = newCard.element.querySelector(".edit-button");
-  newCard_editButton.addEventListener("click", editButtonEL);
-  
-  const newCard_toggleStateButton = newCard.element.querySelector(".toggle-button");
-  newCard_toggleStateButton.addEventListener("click", toggleStateButtonEL);
-  
-  return newCard;
-}
-
-```
-
-<br />
-
 ### 🙉 랜덤한 색으로 생성되는 태그의 텍스트가 보이지 않는 경우가 생겼다.
 
 가령, 아래와 같이 밝은 색으로 태그의 색이 설정되어 버리면 태그의 텍스트가 보이지 않았다.
