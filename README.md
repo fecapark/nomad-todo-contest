@@ -1,6 +1,6 @@
-# NomadCoders TodoList Competition
+# NomadCoders todo-list competition
 
-TodoList 컨테스트에 참가하기 위해 시작한 Vanilla Javascript 프로젝트
+Todo list 컨테스트에 참가하기 위해 시작한 바넬라 자바스킙트 프로젝트
 
 * [대회 공지](https://nomadcoders.co/community/thread/182)
 
@@ -97,18 +97,15 @@ TodoList 컨테스트에 참가하기 위해 시작한 Vanilla Javascript 프로
 대략 일주일 남짓 걸렸다.
 
 ### 느낀 것
-* 정말 천국과 지옥의 반복이었다. 막상 구현하고 싶은 기능은 많은데, 바닐라로 구현하려니 막막했다.
-  * **나만 이걸 해결할 수 있다**는 마인드로 접근해서 끝까지 물고 늘어졌고, 구현이 다 된 모습을 보면 정말 황홀했다.
-
-* 확장성, 재사용성등을 고려해서 `ES6`의 `module`과 `class`를 이용해 분할정복하며 구현했고, 덕분에 코드 재사용성/확장성이 대폭으로 상승한 것을 직접 체감했다.
-
-* 정말 `React`가 생산성에 있어서 얼마나 대단한 라이브러리인지 깨달았다. 😭
-  * `React`로 만들었다면 일주일은 커녕 3일도 안 걸렸을것이다.
-  * 만드는 내내 `React`의 `Hooks`, 생명 주기, `JSX`, 컴포넌트가 그리웠다.
-
-* `React`로 넘어가기전, 많은 개발자들이 바닐라를 만져보면서 왜 `React`가 필요한지 몸으로 느껴보라고 했는데 왜 그랬는지 알 것 같다.
 
 * 구현하면서 가장 힘들었던 순서는 **이벤트 > 해시태그 구현 > 부드러운 애니메이션 전환 > 나머지** 였다.
+
+### 2년 후 느낀 점
+
+* 이제 구현할 때 가장 힘든 순서가 거꾸로 되었는데, 열정이 넘쳤던 것 같다 ㅋㅋㅋ
+* 아쉬운 부분이 굉장히 많이 눈에 띈다. UI부터 시작해서... 특히 클린 코드가 너무 부족하다. 근데 어찌 돌아가는 게 또 신기하다.
+
+
 
 <br />
 
@@ -181,6 +178,10 @@ const toConvert = card.text + getSalt();
 const id = createHash(toConvert);  // Unique ID! 
 ```
 
+### (2년 후 업데이트) salt 만들어 주는거도 사치다.
+
+그냥 현재 시간을 ms로 변환해서 그거를 아이디로 써도 괜찮았을듯 하다..
+
 <br />
 
 ### 🙉 Modal을 효율적으로 재사용하고 싶었다.
@@ -250,6 +251,22 @@ renderModal() {
 | ![image](https://user-images.githubusercontent.com/67461578/110213833-1b908a00-7ee5-11eb-8242-6ead10b33900.png) | ![image](https://user-images.githubusercontent.com/67461578/110213846-2814e280-7ee5-11eb-8ab2-e8308512456f.png) | ![image](https://user-images.githubusercontent.com/67461578/110213859-3236e100-7ee5-11eb-9326-ec72feb4079a.png) |
 
 정말 간단하게 문제를 해결할 수 있었다!
+
+### (2년 후 업데이트) HSL 컬러를 이용하여 밝은 톤으로 렌더링하면 opacity를 낮출 필요가 없다.
+
+문제는 라이트모드에서는 어떻게 처리해야하는 것이다.  
+분명 opacity만으로는 한계가 있을 것이다.
+
+그래서 생각한 해결 방법이 RGB 대신 HSL 컬러를 이용하는 것이다.
+
+Hue 값의 범위를 전체로 두고,  
+Saturation의 범위를 대략 55 ~ 60%,  
+Lightness의 범위를 대략 75 ~ 85%  
+
+정도로 해두고 랜덤으로 렌더링하면 밝은 톤의 파스텔 색상이 나온다.
+
+이 방법을 떠올리고, 같은 방식의 태그 생성을 [이 프로젝트](https://github.com/fecapark/material-form)에 적용하였다.
+
 
 <br />
 
