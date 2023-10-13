@@ -1,6 +1,6 @@
 # NomadCoders todo-list competition
 
-Todo list 컨테스트에 참가하기 위해 시작한 바넬라 자바스킙트 프로젝트
+Todo list 컨테스트에 참가하기 위해 시작한 바닐라 자바스킙트 프로젝트
 
 * [대회 공지](https://nomadcoders.co/community/thread/182)
 
