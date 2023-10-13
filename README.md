@@ -44,7 +44,10 @@ Todo list 컨테스트에 참가하기 위해 시작한 바닐라 자바스킙�
 
 **모든 데이터는 자동으로 `LocalStorage`에 저장된다.**
 
-### 2 - 1. 유저 🙍‍♂️
+<details>
+ <summary>펼치기/접기</summary>
+
+ ### 2 - 1. 유저 🙍‍♂️
 
 * Display name 설정(최초 1회) &nbsp; [미리보기](https://github.com/pshtony1/noamd-todo-competition/#display-name-%EC%84%A4%EC%A0%95)
 
@@ -88,6 +91,9 @@ Todo list 컨테스트에 참가하기 위해 시작한 바닐라 자바스킙�
 ### 2 - 5. 기타 🎸
 
 * 언어 변경 지원(한국어, 영어)
+</details>
+
+
 
 <br />
 
