@@ -20,7 +20,7 @@ Todo list 컨테스트에 참가하기 위해 시작한 바닐라 자바스킙�
 
 <br />
 
-[프로젝트 링크](https://fecapark.github.io/nomad-todo-competition/)
+[프로젝트 링크](https://fecapark.github.io/nomad-todo-contest/)
 
 <img src="https://user-images.githubusercontent.com/67461578/110208885-00b21b80-7ecd-11eb-8eb8-958cbf04ecc7.png" width="50%" /><img src="https://user-images.githubusercontent.com/67461578/110208916-1cb5bd00-7ecd-11eb-864e-4a13cfcb4cc0.png" width="50%" />
 
