@@ -30,11 +30,11 @@ Todo list 컨테스트에 참가하기 위해 시작한 바넬라 자바스킙�
 
 ## 1. 스택
 
-**Only Vanilla Javascript + Front-end**
+**Only Javascript**
 
 <img src="https://img.shields.io/badge/Javascript-1f232a?style=flat-square&logo=JavaSCript&logoColor=f0db4f" height="30px" /> 
 
-**서드 파티는 일체 사용하지 않았다.**
+**서드 파티는 일체 사용하지 않았다. (노드 첨가율 0%)**
 
 <br />
 
